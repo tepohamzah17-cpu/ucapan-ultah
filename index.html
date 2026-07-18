@@ -121,7 +121,7 @@
                     <!-- Teks otomatis berjalan di sini -->
                     </p>
                 <p style="text-align: right; margin-bottom: 0; font-size: 13px; color: #8c7864;">
-                    Penulis : Orang yang pernah hadir di hidupmu ❤️
+                    -Muhamad Imron Hamzah ❤️
                 </p>
             </div>
         </div>
@@ -199,56 +199,42 @@
                     
                     // JALANKAN EFEK TEKS MENGETIK OTOMATIS
                     const txtElement = document.getElementById('typing-text');
-                    const pesanRahasia = `Selamat ulang tahun cantik. 🤍 
-                    
-Hari ini mungkin hanya satu hari biasa bagi orang lain, tapi bagiku hari ini tetap istimewa karena seseorang yang pernah sangat berarti dalam hidupku sedang bertambah usia. 
+                   // Gunakan backtick untuk menyimpan teks per paragraf
+const pesanRahasia = `Selamat ulang tahun, ya. 🤍
 
-Aku berharap setiap doa yang kamu panjatkan diam-diam didengar, harapan yang kamu simpan menemukan jalannya, dan setiap langkahmu selalu mengarah pada kebahagiaan. Semoga kesehatan, ketenangan hati, rezeki yang baik, dan orang-orang tulus selalu mengelilingimu. 
+Hari ini mungkin hanya satu hari dari sekian banyak hari dalam hidupmu, tapi bagiku hari ini tetap menjadi hari yang istimewa.
 
-Terima kasih karena pernah hadir dalam hidupku. Terima kasih untuk semua tawa, cerita, perhatian, dan kenangan yang pernah kita ciptakan bersama. Meskipun sekarang semua itu sudah menjadi masa lalu, aku tidak pernah menyesalinya. Mengenalmu adalah salah satu cerita yang akan selalu kusimpan dengan baik. 
+Aku berharap semoga setiap doa yang kamu panjatkan diam-diam didengar oleh Tuhan, dan setiap harapan yang kamu simpan menemukan jalannya.
 
-Aku tidak tahu bagaimana kehidupanmu sekarang atau apa saja yang sedang kamu perjuangkan. Yang aku tahu, aku benar-benar berharap kamu bahagia dengan pilihanmu dan dengan siapa pun yang menemanimu nanti. 
+Terima kasih karena pernah hadir dalam hidupku. Terima kasih untuk semua tawa, cerita, dan kenangan yang pernah kita ciptakan bersama.`;
 
-Jujur, ada kalanya aku masih mengingat kenangan kita. Bukan karena ingin memutar waktu, tetapi karena kamu adalah salah satu orang yang meninggalkan jejak yang baik di hidupku. Terima kasih sudah pernah menjadi alasan di balik senyumku dan mengajarkanku arti ketulusan. 
+// Pecah berdasarkan baris kosong
+const paragrafArray = pesanRahasia.split('\n\n');
 
-Semoga bertambahnya usiamu membawa kedewasaan dan keberanian untuk mengejar semua impianmu. Jangan pernah ragu pada dirimu sendiri. Apa pun yang terjadi setelah ini, doaku akan tetap sama: semoga hidup selalu memperlakukanmu dengan lembut. 
-
-Semoga semua lelahmu berganti menjadi pencapaian, dan semua luka berganti menjadi senyum yang paling tulus. Dan kalau suatu hari nanti kita berpapasan lagi, semoga kita bisa saling tersenyum dan bangga karena pernah menjadi bagian dari cerita satu sama lain. 
-
-Bahagia selalu, ya. Terima kasih untuk segalanya. 🤍`;
-                    
-                    const paragrafArray = pesanRahasia.split('\n\n');
-
-async function tampilkanTeks() {
-    for (let i = 0; i < paragrafArray.length; i++) {
-        // Tampilkan paragraf saat ini
-        await ketikParagraf(paragrafArray[i]);
+async function tampilkanPerParagraf() {
+    // Bersihkan elemen sebelum memulai
+    txtElement.innerHTML = "";
+    
+    for (const paragraf of paragrafArray) {
+        // Masukkan paragraf baru
+        const p = document.createElement('p');
+        p.innerText = paragraf;
+        p.style.marginBottom = "20px"; // Jarak antar paragraf
+        p.style.opacity = "0"; // Untuk efek transisi muncul (fade-in)
+        p.style.transition = "opacity 1s ease-in";
         
-        // Tambahkan jeda sejenak sebelum paragraf berikutnya
-        if (i < paragrafArray.length - 1) {
-            txtElement.innerHTML += "<br><br>";
-            await new Promise(resolve => setTimeout(resolve, 800)); // Jeda 0.8 detik antar paragraf
-        }
+        txtElement.appendChild(p);
+        
+        // Trigger efek fade-in
+        setTimeout(() => { p.style.opacity = "1"; }, 50);
+        
+        // Jeda 1.5 detik sebelum paragraf berikutnya muncul
+        await new Promise(resolve => setTimeout(resolve, 1500));
     }
 }
 
-function ketikParagraf(teks) {
-    return new Promise(resolve => {
-        let j = 0;
-        function ketik() {
-            if (j < teks.length) {
-                txtElement.innerHTML += teks.charAt(j);
-                j++;
-                setTimeout(ketik, 30); // Kecepatan mengetik (30ms per huruf)
-            } else {
-                resolve();
-            }
-        }
-        ketik();
-    });
-}
 // Panggil fungsi ini saat kado diklik
-tampilkanTeks();
+tampilkanPerParagraf();
                 });
             }   
 
