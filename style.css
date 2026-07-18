@@ -77,50 +77,67 @@ body {
     width: 100%;
     height: 100%;
     z-index: 1;
+    /* TAMBAHKAN INI: Memastikan klik menembus canvas jika 
+       ada bagian pinggir kotak pesan yang tidak sengaja tertutup */
+    pointer-events: none; 
 }
 
 /* Pesan di tengah galaksi */
 .galaxy-message {
     position: relative;
-    z-index: 999;
+    /* NAIKKAN Z-INDEX: Harus lebih tinggi dari z-index canvas (1) dan teks melayang (998) */
+    z-index: 99999; 
     text-align: center;
     color: white;
+    width: 90%; /* Menggunakan persentase agar responsif di layar HP */
     max-width: 400px;
-    padding: 20px;
-    background: rgba(0, 0, 0, 0.4);
+    padding: 25px;
+    background: rgba(0, 0, 0, 0.6); /* Sedikit lebih gelap agar teks lebih kontras */
     border-radius: 15px;
     backdrop-filter: blur(5px);
     border: 1px solid rgba(255, 105, 180, 0.3);
     animation: fadeIn 3s ease-in forwards;
     opacity: 0;
-    margin-top: 150px;
+    
+    /* HAPUS ATAU HILANGKAN margin-top: 150px agar posisi kotak 
+       tetap berada tepat di tengah layar berkat flexbox induknya */
+    margin-top: 0; 
 }
 
 .galaxy-message h1 {
     color: #ff69b4;
     text-shadow: 0 0 10px #ff1493, 0 0 20px #ff1493;
     font-size: 32px;
-    margin-bottom: 10px;
+    margin-bottom: 15px;
 }
 
 .galaxy-message p {
     color: #ffd1dc;
     line-height: 1.6;
     font-size: 15px;
+    margin-bottom: 10px; /* Memberi jarak aman sebelum tombol */
 }
 
 .btn-logout-dark {
+    position: relative;
+    z-index: 100000; /* Lapisan paling atas dari seluruh elemen */
     margin-top: 20px;
-    padding: 10px 20px;
-    background: transparent;
+    padding: 12px 25px; /* Area sentuhan diperlebar agar mudah ditekan di Android */
+    background: rgba(255, 105, 180, 0.1); /* Background transparan tipis */
     border: 1px solid #ff69b4;
     color: #ff69b4;
     border-radius: 20px;
     cursor: pointer;
+    font-weight: 600;
+    display: inline-block; /* Memastikan dimensi tombol terdeteksi sempurna */
     transition: 0.3s;
 }
-.btn-logout-dark:hover { background: #ff69b4; color: white; box-shadow: 0 0 15px #ff69b4; }
 
+.btn-logout-dark:hover { 
+    background: #ff69b4; 
+    color: white; 
+    box-shadow: 0 0 15px #ff69b4; 
+}
 /* Teks Melayang (Floating Orbit Text) */
 .floating-text {
     position: absolute;
