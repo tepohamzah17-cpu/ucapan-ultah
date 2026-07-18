@@ -39,29 +39,38 @@
         </div>
     </div>
 
-    <!-- 3. EFEK GALAXY HEART (Tampil setelah kado diklik) -->
+   <!-- 3. EFEK GALAXY HEART (Struktur Baru yang Dipisah untuk Android WebView) -->
     <div id="galaxy-universe" class="hidden">
-        <canvas id="heart-canvas"></canvas>
         
-        <!-- Teks Melayang -->
-        <div class="floating-text text-1">SELAMAT ULANG TAHUN ❤️</div>
-        <div class="floating-text text-2">SEMOGA PANJANG UMUR ✨</div>
-        <div class="floating-text text-3">CINTAKU ❤️</div>
-        <div class="floating-text text-4">ORANG PALING SPESIAL 💖</div>
-        <div class="floating-text text-5">TERUSLAH BERSINAR ✨</div>
-        
-        <div class="galaxy-message">
-            <h1>Happy Birthday!</h1>
-            <p>Sama seperti miliaran bintang di galaksi ini, kebahagiaanmu adalah hal yang paling bersinar bagiku. Semoga semua doa dan harapanmu terwujud di usia yang baru ini. ❤️</p>
-            <button id="btn-logout" class="btn-logout-dark">Tutup & Keluar</button>
+        <!-- Bungkus Canvas tersendiri di lapisan paling dasar -->
+        <div class="canvas-background-layer">
+            <canvas id="heart-canvas"></canvas>
         </div>
+        
+        <!-- Lapisan Konten Interaktif di atas Canvas -->
+        <div class="interactive-content-layer">
+            <!-- Teks Melayang -->
+            <div class="floating-text text-1">SELAMAT ULANG TAHUN ❤️</div>
+            <div class="floating-text text-2">SEMOGA PANJANG UMUR ✨</div>
+            <div class="floating-text text-3">CINTAKU ❤️</div>
+            <div class="floating-text text-4">ORANG PALING SPESIAL 💖</div>
+            <div class="floating-text text-5">TERUSLAH BERSINAR ✨</div>
+            
+            <!-- Kotak Pesan Utama -->
+            <div class="galaxy-message">
+                <h1>Happy Birthday!</h1>
+                <p>Sama seperti miliaran bintang di galaksi ini, kebahagiaanmu adalah hal yang paling bersinar bagiku. Semoga semua doa dan harapanmu terwujud di usia yang baru ini. ❤️</p>
+                <button id="btn-logout" class="btn-logout-dark">Tutup & Keluar</button>
+            </div>
+        </div>
+
     </div>
 
     <!-- Musik Latar -->
     <audio id="bg-music" loop>
         <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
     </audio>
-    
+
     <script type="module" src="app.js"></script>
 </body>
 </html>
