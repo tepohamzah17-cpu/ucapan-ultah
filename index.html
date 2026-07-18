@@ -25,32 +25,49 @@
             <button id="btn-register" class="btn-secondary">Daftar Akun Baru</button>
         </div>
 
-        <!-- 2. KARTU KONTEN UCAPAN (LEBIH MENARIK) -->
+        <!-- 2. KARTU KONTEN UCAPAN INTERAKTIF -->
         <div id="content-card" class="card hidden">
-            <!-- Wadah untuk animasi balon terbang -->
             <div id="balloon-container"></div>
 
-            <div class="birthday-header">
-                <span class="birthday-emoji">🎉</span>
-                <h1 class="birthday-title">Selamat Ulang Tahun!</h1>
-                <span class="birthday-emoji">🎂</span>
+            <!-- Fitur Baru 1: Live Counter Usia Baru -->
+            <div class="age-counter">
+                <h3>Waktu Spesialmu Dimulai:</h3>
+                <div id="timer-display">00 Jam 00 Menit 00 Detik</div>
             </div>
 
-            <div class="birthday-message">
-                <p>Hari ini adalah hari yang sangat spesial! Semoga di usia yang baru ini, setiap langkahmu dipenuhi dengan kebahagiaan, kesehatan, keberkahan, dan semua impian indahmu segera terwujud. ✨</p>
-                <p>Terima kasih sudah menjadi sosok yang luar biasa. Nikmati hari spesialmu ini dengan senyuman terbaikmu! ❤️</p>
+            <!-- Fitur Baru 2: Kotak Kado Kejutan -->
+            <div id="gift-box-wrapper">
+                <div id="gift-box">🎁</div>
+                <p class="gift-hint">Ketuk kadonya untuk membuka pesan spesial! ✨</p>
             </div>
 
-            <div class="birthday-actions">
-                <button id="btn-surprise" class="btn-surprise">Beri Kejutan Lagi! 🎊</button>
-                <button id="btn-logout" class="btn-logout">Keluar Halaman</button>
+            <!-- Konten Pesan (Awalnya Tersembunyi) -->
+            <div id="secret-message" class="hidden-content">
+                <div class="birthday-header">
+                    <span class="birthday-emoji">🎉</span>
+                    <h1 class="birthday-title">Happy Birthday!</h1>
+                    <span class="birthday-emoji">🎂</span>
+                </div>
+
+                <div class="birthday-message">
+                    <p>Hari ini adalah hari yang sangat spesial! Semoga di usia yang baru ini, setiap langkahmu dipenuhi dengan kebahagiaan, kesehatan, keberkahan, dan semua impian indahmu segera terwujud. ✨</p>
+                    <p>Terima kasih sudah menjadi sosok yang luar biasa. Nikmati hari spesialmu ini dengan senyuman terbaikmu! ❤️</p>
+                </div>
+
+                <div class="birthday-actions">
+                    <button id="btn-surprise" class="btn-surprise">Beri Kejutan Lagi! 🎊</button>
+                    <button id="btn-logout" class="btn-logout">Keluar Halaman</button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Pustaka Animasi Hujan Konfeti -->
+    <!-- Fitur Baru 3: Musik Latar (Ganti URL dengan lagu pilihan Anda, pastikan berakhiran .mp3) -->
+    <audio id="bg-music" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
-    <!-- Logika Firebase & Efek -->
     <script type="module" src="app.js"></script>
 </body>
 </html>

@@ -7,7 +7,6 @@ import {
     signOut 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// Firebase Configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAm-t2mbHV7sSEcoDvNgZfTinmx5tcSz6s",
   authDomain: "project-bd-163e4.firebaseapp.com",
@@ -31,25 +30,22 @@ const btnLogout = document.getElementById('btn-logout');
 const inputEmail = document.getElementById('input-email');
 const inputPassword = document.getElementById('input-password');
 
-// --- EFEK KEJUTAN INTERAKTIF ---
+const giftBoxWrapper = document.getElementById('gift-box-wrapper');
+const secretMessage = document.getElementById('secret-message');
+const timerDisplay = document.getElementById('timer-display');
+const bgMusic = document.getElementById('bg-music');
 
+let timerInterval;
+
+// --- EFEK VISUAL PESTA ---
 function lemparkanKonfeti() {
-    confetti({
-        particleCount: 80,
-        spread: 60,
-        origin: { x: 0.1, y: 0.6 }
-    });
-    confetti({
-        particleCount: 80,
-        spread: 60,
-        origin: { x: 0.9, y: 0.6 }
-    });
+    confetti({ particleCount: 80, spread: 60, origin: { x: 0.1, y: 0.6 } });
+    confetti({ particleCount: 80, spread: 60, origin: { x: 0.9, y: 0.6 } });
 }
 
 function buatBalonTerbang() {
     const container = document.getElementById('balloon-container');
     if (!container) return;
-    
     container.innerHTML = ''; 
     for (let i = 0; i < 15; i++) {
         const balloon = document.createElement('div');
@@ -60,78 +56,77 @@ function buatBalonTerbang() {
     }
 }
 
-function picuKejutanUlangTahun() {
-    lemparkanKonfeti();
-    buatBalonTerbang();
+// --- LOGIKA LIVE TIMER USIA BARU ---
+function jalankanCounterWaktu() {
+    const startTime = new Date().getTime();
+    
+    clearInterval(timerInterval);
+    timerInterval = setInterval(() => {
+        const now = new Date().getTime();
+        const difference = now - startTime;
+
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+
+        timerDisplay.innerHTML = `${hours} Jam ${minutes} Menit ${seconds} Detik`;
+    }, 1000);
 }
 
-// --- LOGIKA AUTENTIKASI ---
+// --- INTERAKSI BUKA KADO & AUDIO ---
+giftBoxWrapper.addEventListener('click', () => {
+    // Sembunyikan ikon kado
+    giftBoxWrapper.classList.add('hidden');
+    // Munculkan isi surat ucapan dengan efek transisi
+    secretMessage.classList.add('show');
+    
+    // Picu audio & efek visual pesta
+    bgMusic.play().catch(error => console.log("Autoplay musik diblokir browser, dimainkan setelah interaksi."));
+    lemparkanKonfeti();
+    buatBalonTerbang();
+    jalankanCounterWaktu();
+});
 
-// Monitor Status Login
+// --- AUTENTIKASI ---
 onAuthStateChanged(auth, (user) => {
     if (user) {
         loginCard.classList.add('hidden');
         contentCard.classList.remove('hidden');
-        // Jalankan efek saat halaman ucapan terbuka
-        setTimeout(picuKejutanUlangTahun, 300);
     } else {
         loginCard.classList.remove('hidden');
         contentCard.classList.add('hidden');
+        secretMessage.classList.remove('show');
+        giftBoxWrapper.classList.remove('hidden');
+        clearInterval(timerInterval);
+        bgMusic.pause();
+        bgMusic.currentTime = 0;
     }
 });
 
-// Helper Ambil Input & Validasi
 function getInputs() {
     const email = inputEmail.value.trim();
     const password = inputPassword.value;
-    if (!email || !password) {
-        alert("Harap isi email dan kata sandi!");
-        return null;
-    }
-    if (password.length < 6) {
-        alert("Kata sandi minimal harus 6 karakter!");
-        return null;
-    }
+    if (!email || !password) { alert("Harap isi email dan kata sandi!"); return null; }
+    if (password.length < 6) { alert("Kata sandi minimal harus 6 karakter!"); return null; }
     return { email, password };
 }
 
-// Aksi Masuk Akun
 btnLogin.addEventListener('click', async () => {
-    const credentials = getInputs();
-    if (!credentials) return;
-
-    try {
-        await signInWithEmailAndPassword(auth, credentials.email, credentials.password);
-    } catch (error) {
-        console.error("Gagal masuk:", error.message);
-        alert("Email atau kata sandi salah!");
-    }
+    const credentials = getInputs(); if (!credentials) return;
+    try { await signInWithEmailAndPassword(auth, credentials.email, credentials.password); } 
+    catch (error) { alert("Email atau kata sandi salah!"); }
 });
 
-// Aksi Daftar Akun Baru
 btnRegister.addEventListener('click', async () => {
-    const credentials = getInputs();
-    if (!credentials) return;
-
-    try {
+    const credentials = getInputs(); if (!credentials) return;
+    try { 
         await createUserWithEmailAndPassword(auth, credentials.email, credentials.password);
-        alert("Akun berhasil dibuat dan Anda otomatis masuk!");
+        alert("Akun berhasil dibuat!");
     } catch (error) {
-        console.error("Gagal mendaftar:", error.message);
-        if (error.code === 'auth/email-already-in-use') {
-            alert("Email ini sudah terdaftar. Silakan langsung masuk.");
-        } else {
-            alert("Gagal mendaftar: " + error.message);
-        }
+        if (error.code === 'auth/email-already-in-use') alert("Email sudah terdaftar.");
+        else alert("Gagal mendaftar: " + error.message);
     }
 });
 
-// Aksi Kejutan Manual
-if (btnSurprise) {
-    btnSurprise.addEventListener('click', picuKejutanUlangTahun);
-}
-
-// Aksi Keluar Halaman
-btnLogout.addEventListener('click', () => {
-    signOut(auth);
-});
+btnSurprise.addEventListener('click', () => { lemparkanKonfeti(); buatBalonTerbang(); });
+btnLogout.addEventListener('click', () => { signOut(auth); });
