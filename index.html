@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spesial Untukmu ✨</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <!-- 1. HALAMAN LOGIN (Ditampilkan di awal) -->
+        <div id="login-card" class="card">
+            <h2>Halaman Terkunci 🔒</h2>
+            <p>Untuk melihat pesan spesial di dalamnya, silakan konfirmasi akun Google yang aktif di perangkatmu.</p>
+            <button id="btn-login" class="btn-google">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon">
+                Masuk dengan Google
+            </button>
+        </div>
+
+        <!-- 2. HALAMAN KONTEN UTAMA (Disembunyikan di awal) -->
+        <div id="content-card" class="card hidden">
+            <div class="balloon-icon">🎈🎉</div>
+            <h1 class="birthday-title">Selamat Ulang Tahun!</h1>
+            <p class="birthday-message">
+                Semoga di usia yang baru ini, segala impianmu tercapai, selalu diberikan kesehatan, kebahagiaan, dan kelancaran dalam segala urusan. Terima kasih sudah menjadi orang yang luar biasa! 🎂✨
+            </p>
+            <button id="btn-logout" class="btn-secondary">Keluar</button>
+        </div>
+    </div>
+
+    <!-- Menghubungkan logika JavaScript utama -->
+    <script type="module" src="app.js"></script>
+</body>
+</html>
