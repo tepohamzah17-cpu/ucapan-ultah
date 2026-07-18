@@ -55,17 +55,19 @@ body {
 .gift-hint { font-size: 13px; color: #d85a7f; font-weight: 500; margin-top: 10px; }
 
 /* Pastikan penampung utama mencakup layar penuh */
+/* Pastikan penampung utama mencakup layar penuh dan memutus hubungan dari flexbox body */
 #galaxy-universe {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100vw;
-    height: 100vh;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    height: 100vh !important;
     background: #000;
-    z-index: 9999;
+    z-index: 999999 !important; /* Naikkan ekstrem untuk menembus batas WebView */
+    overflow: hidden;
 }
 
-/* Lapisan khusus Canvas (Murni Visual, Tidak Boleh Menerima Sentuhan) */
+/* Lapisan khusus Canvas (Murni Visual) */
 .canvas-background-layer {
     position: absolute;
     top: 0;
@@ -83,15 +85,15 @@ body {
     pointer-events: none !important;
 }
 
-/* Lapisan khusus Konten (Wajib menerima sentuhan dan berada di atas canvas) */
+/* Lapisan khusus Konten (Wajib menggunakan grid/absolute mandiri, bukan flex bawaan body) */
 .interactive-content-layer {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 10; /* Berada jauh di atas z-index canvas */
-    display: flex;
+    z-index: 9; 
+    display: flex !important;
     justify-content: center;
     align-items: center;
     pointer-events: auto !important; 
@@ -100,24 +102,24 @@ body {
 /* Kotak pesan tetap responsif */
 .galaxy-message {
     position: relative;
-    z-index: 20;
+    z-index: 99;
     text-align: center;
     color: white;
-    width: 90%;
+    width: 85%;
     max-width: 400px;
     padding: 25px;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(10, 10, 10, 0.85); /* Dibuat sedikit lebih gelap agar tegas */
     border-radius: 15px;
     backdrop-filter: blur(5px);
-    border: 1px solid rgba(255, 105, 180, 0.3);
+    border: 1px solid rgba(255, 105, 180, 0.4);
     pointer-events: auto !important;
 }
 
 .btn-logout-dark {
     position: relative;
-    z-index: 30;
+    z-index: 999;
     margin-top: 20px;
-    padding: 14px 28px;
+    padding: 16px 32px; /* Ukuran tombol diperbesar sesuai standar kenyamanan Android */
     background: #ff69b4;
     color: white;
     border: none;
@@ -127,7 +129,9 @@ body {
     display: inline-block;
     pointer-events: auto !important;
     -webkit-tap-highlight-color: transparent;
-}/* Teks Melayang (Floating Orbit Text) */
+}
+
+/* Teks Melayang (Floating Orbit Text) */
 .floating-text {
     position: absolute;
     color: #ffb6c1;
