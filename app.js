@@ -32,10 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const bgMusic = document.getElementById('bg-music');
     const btnLogout = document.getElementById('btn-logout');
 
+   // Deklarasi Elemen Input & Tombol Auth (Sudah Disesuaikan dengan ID HTML Kamu)
     const loginButton = document.getElementById('btn-login'); 
     const btnRegister = document.getElementById('btn-register');
-    const emailInput = document.getElementById('email-input');
-    const passwordInput = document.getElementById('password-input');
+    const emailInput = document.getElementById('input-email');    // Perubahan di sini
+    const passwordInput = document.getElementById('input-password'); // Perubahan di sini
 
     let timerInterval;
 
