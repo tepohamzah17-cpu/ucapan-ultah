@@ -9,28 +9,48 @@
 <body>
 
     <div class="container">
-        <!-- 1. HALAMAN LOGIN (Ditampilkan di awal) -->
+        <!-- 1. KARTU LOGIN & DAFTAR -->
         <div id="login-card" class="card">
-            <h2>Halaman Terkunci 🔒</h2>
-            <p>Untuk melihat pesan spesial di dalamnya, silakan konfirmasi akun Google yang aktif di perangkatmu.</p>
-            <button id="btn-login" class="btn-google">
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google icon">
-                Masuk dengan Google
-            </button>
+            <h2>Halaman Privat 🔒</h2>
+            <p>Silakan masuk atau daftar untuk melihat pesan.</p>
+            
+            <div class="input-group">
+                <input type="email" id="input-email" placeholder="Masukkan Email Valid" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="input-password" placeholder="Buat Kata Sandi" required>
+            </div>
+            
+            <button id="btn-login" class="btn-primary" style="margin-bottom: 10px;">Masuk</button>
+            <button id="btn-register" class="btn-secondary">Daftar Akun Baru</button>
         </div>
 
-        <!-- 2. HALAMAN KONTEN UTAMA (Disembunyikan di awal) -->
+        <!-- 2. KARTU KONTEN UCAPAN (LEBIH MENARIK) -->
         <div id="content-card" class="card hidden">
-            <div class="balloon-icon">🎈🎉</div>
-            <h1 class="birthday-title">Selamat Ulang Tahun!</h1>
-            <p class="birthday-message">
-                Semoga di usia yang baru ini, segala impianmu tercapai, selalu diberikan kesehatan, kebahagiaan, dan kelancaran dalam segala urusan. Terima kasih sudah menjadi orang yang luar biasa! 🎂✨
-            </p>
-            <button id="btn-logout" class="btn-secondary">Keluar</button>
+            <!-- Wadah untuk animasi balon terbang -->
+            <div id="balloon-container"></div>
+
+            <div class="birthday-header">
+                <span class="birthday-emoji">🎉</span>
+                <h1 class="birthday-title">Selamat Ulang Tahun!</h1>
+                <span class="birthday-emoji">🎂</span>
+            </div>
+
+            <div class="birthday-message">
+                <p>Hari ini adalah hari yang sangat spesial! Semoga di usia yang baru ini, setiap langkahmu dipenuhi dengan kebahagiaan, kesehatan, keberkahan, dan semua impian indahmu segera terwujud. ✨</p>
+                <p>Terima kasih sudah menjadi sosok yang luar biasa. Nikmati hari spesialmu ini dengan senyuman terbaikmu! ❤️</p>
+            </div>
+
+            <div class="birthday-actions">
+                <button id="btn-surprise" class="btn-surprise">Beri Kejutan Lagi! 🎊</button>
+                <button id="btn-logout" class="btn-logout">Keluar Halaman</button>
+            </div>
         </div>
     </div>
 
-    <!-- Menghubungkan logika JavaScript utama -->
+    <!-- Pustaka Animasi Hujan Konfeti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
+    <!-- Logika Firebase & Efek -->
     <script type="module" src="app.js"></script>
 </body>
 </html>
