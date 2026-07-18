@@ -39,15 +39,15 @@
         </div>
     </div>
 
-   <!-- 3. EFEK GALAXY HEART (Struktur Baru yang Dipisah untuk Android WebView) -->
+    <!-- 3. EFEK GALAXY HEART (Struktur Terpisah untuk Akselerasi WebView) -->
     <div id="galaxy-universe" class="hidden">
         
-        <!-- Bungkus Canvas tersendiri di lapisan paling dasar -->
+        <!-- Lapisan khusus Canvas (Murni Visual) -->
         <div class="canvas-background-layer">
             <canvas id="heart-canvas"></canvas>
         </div>
         
-        <!-- Lapisan Konten Interaktif di atas Canvas -->
+        <!-- Lapisan khusus Konten Interaktif -->
         <div class="interactive-content-layer">
             <!-- Teks Melayang -->
             <div class="floating-text text-1">SELAMAT ULANG TAHUN ❤️</div>
@@ -60,17 +60,17 @@
             <div class="galaxy-message">
                 <h1>Happy Birthday!</h1>
                 <p>Sama seperti miliaran bintang di galaksi ini, kebahagiaanmu adalah hal yang paling bersinar bagiku. Semoga semua doa dan harapanmu terwujud di usia yang baru ini. ❤️</p>
-               <button type="button" id="btn-logout" class="btn-logout-dark">Tutup & Keluar</button>
+                <!-- Ditambahkan ontouchstart kosong untuk memicu respons instan WebView -->
+                <button id="btn-logout" class="btn-logout-dark" ontouchstart="">Tutup & Keluar</button>
             </div>
         </div>
-
     </div>
 
     <!-- Musik Latar -->
     <audio id="bg-music" loop>
         <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
     </audio>
-
+    
     <script type="module" src="app.js"></script>
 </body>
 </html>

