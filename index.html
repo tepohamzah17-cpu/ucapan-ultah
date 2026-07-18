@@ -8,8 +8,8 @@
 </head>
 <body>
 
-    <div class="container">
-        <!-- 1. KARTU LOGIN & DAFTAR -->
+    <!-- 1. KARTU LOGIN & DAFTAR -->
+    <div class="container" id="main-container">
         <div id="login-card" class="card">
             <h2>Halaman Privat 🔒</h2>
             <p>Silakan masuk atau daftar untuk melihat pesan.</p>
@@ -25,49 +25,43 @@
             <button id="btn-register" class="btn-secondary">Daftar Akun Baru</button>
         </div>
 
-        <!-- 2. KARTU KONTEN UCAPAN INTERAKTIF -->
+        <!-- 2. HALAMAN PERANTARA (KADO) -->
         <div id="content-card" class="card hidden">
-            <div id="balloon-container"></div>
-
-            <!-- Fitur Baru 1: Live Counter Usia Baru -->
             <div class="age-counter">
                 <h3>Waktu Spesialmu Dimulai:</h3>
                 <div id="timer-display">00 Jam 00 Menit 00 Detik</div>
             </div>
 
-            <!-- Fitur Baru 2: Kotak Kado Kejutan -->
             <div id="gift-box-wrapper">
                 <div id="gift-box">🎁</div>
-                <p class="gift-hint">Ketuk kadonya untuk membuka pesan spesial! ✨</p>
-            </div>
-
-            <!-- Konten Pesan (Awalnya Tersembunyi) -->
-            <div id="secret-message" class="hidden-content">
-                <div class="birthday-header">
-                    <span class="birthday-emoji">🎉</span>
-                    <h1 class="birthday-title">Happy Birthday!</h1>
-                    <span class="birthday-emoji">🎂</span>
-                </div>
-
-                <div class="birthday-message">
-                    <p>Hari ini adalah hari yang sangat spesial! Semoga di usia yang baru ini, setiap langkahmu dipenuhi dengan kebahagiaan, kesehatan, keberkahan, dan semua impian indahmu segera terwujud. ✨</p>
-                    <p>Terima kasih sudah menjadi sosok yang luar biasa. Nikmati hari spesialmu ini dengan senyuman terbaikmu! ❤️</p>
-                </div>
-
-                <div class="birthday-actions">
-                    <button id="btn-surprise" class="btn-surprise">Beri Kejutan Lagi! 🎊</button>
-                    <button id="btn-logout" class="btn-logout">Keluar Halaman</button>
-                </div>
+                <p class="gift-hint">Ketuk kadonya untuk membuka keajaiban! ✨</p>
             </div>
         </div>
     </div>
 
-    <!-- Fitur Baru 3: Musik Latar (Ganti URL dengan lagu pilihan Anda, pastikan berakhiran .mp3) -->
+    <!-- 3. EFEK GALAXY HEART (Tampil setelah kado diklik) -->
+    <div id="galaxy-universe" class="hidden">
+        <canvas id="heart-canvas"></canvas>
+        
+        <!-- Teks Melayang -->
+        <div class="floating-text text-1">SELAMAT ULANG TAHUN ❤️</div>
+        <div class="floating-text text-2">SEMOGA PANJANG UMUR ✨</div>
+        <div class="floating-text text-3">CINTAKU ❤️</div>
+        <div class="floating-text text-4">ORANG PALING SPESIAL 💖</div>
+        <div class="floating-text text-5">TERUSLAH BERSINAR ✨</div>
+        
+        <div class="galaxy-message">
+            <h1>Happy Birthday!</h1>
+            <p>Sama seperti miliaran bintang di galaksi ini, kebahagiaanmu adalah hal yang paling bersinar bagiku. Semoga semua doa dan harapanmu terwujud di usia yang baru ini. ❤️</p>
+            <button id="btn-logout" class="btn-logout-dark">Tutup & Keluar</button>
+        </div>
+    </div>
+
+    <!-- Musik Latar -->
     <audio id="bg-music" loop>
         <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
     </audio>
 
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js"></script>
     <script type="module" src="app.js"></script>
 </body>
 </html>
