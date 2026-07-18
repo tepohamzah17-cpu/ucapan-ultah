@@ -201,7 +201,7 @@
                     const txtElement = document.getElementById('typing-text');
                     const pesanRahasia = `Selamat ulang tahun cantik. 🤍 
                     
-                    Hari ini mungkin hanya satu hari biasa bagi orang lain, tapi bagiku hari ini tetap istimewa karena seseorang yang pernah sangat berarti dalam hidupku sedang bertambah usia. 
+Hari ini mungkin hanya satu hari biasa bagi orang lain, tapi bagiku hari ini tetap istimewa karena seseorang yang pernah sangat berarti dalam hidupku sedang bertambah usia. 
 
 Aku berharap setiap doa yang kamu panjatkan diam-diam didengar, harapan yang kamu simpan menemukan jalannya, dan setiap langkahmu selalu mengarah pada kebahagiaan. Semoga kesehatan, ketenangan hati, rezeki yang baik, dan orang-orang tulus selalu mengelilingimu. 
 
@@ -217,23 +217,40 @@ Semoga semua lelahmu berganti menjadi pencapaian, dan semua luka berganti menjad
 
 Bahagia selalu, ya. Terima kasih untuk segalanya. 🤍`;
                     
-                    txtElement.innerHTML = ""; 
-                    let i = 0;
-                    
-                    function mulaiMengetik() {
-                        if (i < pesanRahasia.length) {
-                            txtElement.innerHTML += pesanRahasia.charAt(i);
-                            i++;
-                            setTimeout(mulaiMengetik, 40); // Kecepatan ketik (milidetik per huruf)
-                        }
-                    }
-                    mulaiMengetik();
+                    const paragrafArray = pesanRahasia.split('\n\n');
 
-                    if (typeof startGalaxyHeart === 'function') {
-                        try { startGalaxyHeart(); } catch(e) { console.log("Animasi tambahan dilewati."); }
-                    }
-                });
+async function tampilkanTeks() {
+    for (let i = 0; i < paragrafArray.length; i++) {
+        // Tampilkan paragraf saat ini
+        await ketikParagraf(paragrafArray[i]);
+        
+        // Tambahkan jeda sejenak sebelum paragraf berikutnya
+        if (i < paragrafArray.length - 1) {
+            txtElement.innerHTML += "<br><br>";
+            await new Promise(resolve => setTimeout(resolve, 800)); // Jeda 0.8 detik antar paragraf
+        }
+    }
+}
+
+function ketikParagraf(teks) {
+    return new Promise(resolve => {
+        let j = 0;
+        function ketik() {
+            if (j < teks.length) {
+                txtElement.innerHTML += teks.charAt(j);
+                j++;
+                setTimeout(ketik, 30); // Kecepatan mengetik (30ms per huruf)
+            } else {
+                resolve();
             }
+        }
+        ketik();
+    });
+}
+// Panggil fungsi ini saat kado diklik
+tampilkanTeks();
+                });
+            }   
 
             // 3. Tombol Kembali dari Isi Kado
             if (btnBackGift) {
